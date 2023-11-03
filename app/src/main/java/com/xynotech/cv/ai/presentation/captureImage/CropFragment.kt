@@ -10,6 +10,8 @@ import android.view.ViewGroup
 import androidx.exifinterface.media.ExifInterface
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import com.google.mlkit.vision.barcode.BarcodeScanner
 import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.barcode.common.Barcode
@@ -17,6 +19,8 @@ import com.google.mlkit.vision.common.InputImage
 import com.google.zxing.MultiFormatReader
 import com.xynotech.converso.ai.databinding.FragmentCropBinding
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 
 
 @AndroidEntryPoint
@@ -27,8 +31,7 @@ class CropFragment : Fragment() {
 
     val sharedViewModel:CaptureSharedViewModel by activityViewModels()
 
-
-    var multiFormatReader: MultiFormatReader = MultiFormatReader()
+    val uploadViewModel:UploadImageViewModel by viewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -40,22 +43,29 @@ class CropFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        binding.fragmentCropImageView.setAspectRatio(4,3)
-        binding.fragmentCropImageView.setFixedAspectRatio(true)
         sharedViewModel.capturedBitmap?.let {
             binding.fragmentCropImageView.setImageBitmap(it)
-
-
         }
 
         binding.fragmentCropImageButton.setOnClickListener {
-
+            sharedViewModel.capturedBitmap?.let { bitmap ->
+                sharedViewModel.scannedQRResult?.let {
+                    uploadViewModel.uploadImage(bitmap, it)
+                    sharedViewModel.scannedQRResult = null
+                }
+            }
         }
-    }
 
+        viewLifecycleOwner.lifecycleScope.launch {
+            uploadViewModel.state.collect {
+                binding.progressBar.visibility = it
+            }
+    }
+    }
 
     override fun onDestroyView() {
         super.onDestroyView()
+        sharedViewModel.capturedBitmap = null
         _binding = null
     }
 

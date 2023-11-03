@@ -1,12 +1,15 @@
 package com.xynotech.cv.ai.data
 
 import com.xynotech.cv.ai.domain.UploadCheckRepository
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.toRequestBody
 import retrofit2.Response
 
 class UploadCheckRepositoryImpl(private val apiService: UploadCheckApiService)  : UploadCheckRepository{
 
     override suspend fun uploadCheck(text:String, image:MultipartBody.Part) : Response<Any> {
-       return apiService.uploadImage(image)
+        val qrCode = text.toRequestBody("text/plain".toMediaTypeOrNull())
+       return apiService.uploadImage(qrCode, image)
     }
 }

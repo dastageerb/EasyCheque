@@ -5,12 +5,11 @@
     android:layout_height="match_parent"
     tools:context="com.xynotech.cv.ai.presentation.captureImage.CapturingFragment">
 
-    <com.canhub.cropper.CropImageView
+    <ImageView
         android:id="@+id/fragmentCropImageView"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
-        android:layout_alignParentTop="true"
+        android:layout_height="200dp"
+        android:contentDescription="test"
         />
 
     <Button
@@ -18,7 +17,17 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="16dp"
-        android:text="Crop"
-        android:layout_below="@id/fragmentCropImageView"
+        android:text="Upload"
+        android:textColor="@color/white"
+        android:layout_alignParentBottom="true"
         />
+
+    <ProgressBar
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_centerInParent="true"
+        android:visibility="gone"
+        android:id="@+id/progressBar"
+        />
+
 </RelativeLayout>

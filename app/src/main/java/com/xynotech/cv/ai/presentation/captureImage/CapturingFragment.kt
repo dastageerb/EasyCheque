@@ -7,13 +7,15 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
-import android.util.Log
+import android.view.GestureDetector
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.CameraSelector
+import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
@@ -35,6 +37,9 @@ import java.util.concurrent.Executors
 class CapturingFragment : Fragment() {
 
     private var _binding: FragmentCapturingBinding? = null
+
+    private lateinit var gestureDetector: GestureDetector
+
     private val binding get() = _binding!!
 
     val sharedViewModel:CaptureSharedViewModel by activityViewModels()
@@ -53,8 +58,12 @@ class CapturingFragment : Fragment() {
         _binding = null
     }
 
-    private var imageCapture: ImageCapture? = null
     private lateinit var cameraExecutor: ExecutorService
+
+    private lateinit var cameraProvider: ProcessCameraProvider
+    private lateinit var imageCapture: ImageCapture
+    private lateinit var imageAnalysis: ImageAnalysis
+    private lateinit var preview: Preview
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -70,6 +79,50 @@ class CapturingFragment : Fragment() {
         binding.fragmentCaptureTakePictureButton.setOnClickListener {
             captureViewFinder()
         }
+    }
+
+    fun startCamera() {
+
+        val cameraProviderFuture = ProcessCameraProvider.getInstance(requireContext())
+
+        cameraProviderFuture.addListener(Runnable {
+            cameraProvider = cameraProviderFuture.get()
+
+            preview = Preview.Builder().build()
+            imageCapture = ImageCapture.Builder().build()
+
+            imageAnalysis = ImageAnalysis.Builder()
+                .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                .build()
+
+            imageAnalysis.setAnalyzer(
+                ContextCompat.getMainExecutor(requireContext()),
+                { imageProxy ->
+                    // Implement your image analysis logic here
+
+                    sharedViewModel.scanQR(requireActivity(),imageProxy)
+
+                    imageProxy.close()
+                })
+
+            val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
+
+            try {
+                cameraProvider.unbindAll()
+
+                cameraProvider.bindToLifecycle(
+                    viewLifecycleOwner,
+                    cameraSelector,
+                    preview,
+                    imageCapture,
+                    imageAnalysis
+                )
+
+                preview.setSurfaceProvider(binding.fragmentCapturingViewFinder.surfaceProvider)
+            } catch (exc: Exception) {
+                // Handle errors
+            }
+        }, ContextCompat.getMainExecutor(requireContext()))
     }
 
     private fun captureViewFinder() {
@@ -113,28 +166,29 @@ class CapturingFragment : Fragment() {
     }
 
 
-    private fun startCamera() {
-        val cameraProviderFuture = ProcessCameraProvider.getInstance(requireContext())
-        cameraProviderFuture.addListener({
-            val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
-            val preview = Preview.Builder()
-                .build()
-                .also {
-                    it.setSurfaceProvider(binding.fragmentCapturingViewFinder.surfaceProvider)
-                }
-            imageCapture = ImageCapture.Builder()
-                .build()
-            val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
+//    private fun startCamera() {
+//        val cameraProviderFuture = ProcessCameraProvider.getInstance(requireContext())
+//        cameraProviderFuture.addListener({
+//            val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
+//            val preview = Preview.Builder()
+//                .build()
+//                .also {
+//                    it.setSurfaceProvider(binding.fragmentCapturingViewFinder.surfaceProvider)
+//                }
+//            imageCapture = ImageCapture.Builder()
+//                .build()
+//            val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
+//
+//            try {
+//                cameraProvider.unbindAll()
+//                cameraProvider.bindToLifecycle(this,cameraSelector, preview,imageCapture)
+//            } catch(exc: Exception) {
+//                Log.e(TAG, "Use case binding failed", exc)
+//            }
+//
+//        }, ContextCompat.getMainExecutor(requireContext()))
+//    }
 
-            try {
-                cameraProvider.unbindAll()
-                cameraProvider.bindToLifecycle(this,cameraSelector, preview,imageCapture)
-            } catch(exc: Exception) {
-                Log.e(TAG, "Use case binding failed", exc)
-            }
-
-        }, ContextCompat.getMainExecutor(requireContext()))
-    }
 
     companion object {
         private const val TAG = "CapturingFragment"

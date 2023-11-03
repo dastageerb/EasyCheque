@@ -1,12 +1,17 @@
 package com.xynotech.cv.ai.data
 
 import okhttp3.MultipartBody
+import okhttp3.RequestBody
 import retrofit2.Response
+import retrofit2.http.Multipart
 import retrofit2.http.POST
 import retrofit2.http.Part
 
 interface UploadCheckApiService {
 
+    @Multipart
     @POST("upload-image")
-    suspend fun uploadImage(@Part("test-image") image:MultipartBody.Part) : Response<Any>
+    suspend fun uploadImage(
+        @Part("qr-code")code:RequestBody,
+        @Part image:MultipartBody.Part) : Response<Any>
 }
