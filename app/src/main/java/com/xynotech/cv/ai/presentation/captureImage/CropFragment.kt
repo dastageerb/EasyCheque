@@ -1,11 +1,20 @@
 package com.xynotech.cv.ai.presentation.captureImage
 
+import android.R.attr
+import android.graphics.Bitmap
 import android.os.Bundle
-import androidx.fragment.app.Fragment
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.exifinterface.media.ExifInterface
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import com.google.mlkit.vision.barcode.BarcodeScanner
+import com.google.mlkit.vision.barcode.BarcodeScanning
+import com.google.mlkit.vision.barcode.common.Barcode
+import com.google.mlkit.vision.common.InputImage
+import com.google.zxing.MultiFormatReader
 import com.xynotech.converso.ai.databinding.FragmentCropBinding
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -17,6 +26,9 @@ class CropFragment : Fragment() {
     val binding get() = _binding!!
 
     val sharedViewModel:CaptureSharedViewModel by activityViewModels()
+
+
+    var multiFormatReader: MultiFormatReader = MultiFormatReader()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -32,12 +44,15 @@ class CropFragment : Fragment() {
         binding.fragmentCropImageView.setFixedAspectRatio(true)
         sharedViewModel.capturedBitmap?.let {
             binding.fragmentCropImageView.setImageBitmap(it)
+
+
         }
 
         binding.fragmentCropImageButton.setOnClickListener {
 
         }
     }
+
 
     override fun onDestroyView() {
         super.onDestroyView()

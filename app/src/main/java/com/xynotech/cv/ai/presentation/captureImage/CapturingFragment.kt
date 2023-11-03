@@ -59,7 +59,6 @@ class CapturingFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-
         cameraExecutor = Executors.newSingleThreadExecutor()
 
         if (requireContext().hasCameraPermission()) {
@@ -113,44 +112,6 @@ class CapturingFragment : Fragment() {
             })
     }
 
-//    private fun takePhoto() {
-//        val imageCapture = imageCapture ?: return
-//        val name = SimpleDateFormat(FILENAME_FORMAT, Locale.US)
-//            .format(System.currentTimeMillis())
-//        val contentValues = ContentValues().apply {
-//            put(MediaStore.MediaColumns.DISPLAY_NAME, name)
-//            put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
-//            if(Build.VERSION.SDK_INT > Build.VERSION_CODES.P) {
-//                put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/CameraX-Image")
-//            }
-//        }
-//
-//        val outputOptions = ImageCapture.OutputFileOptions
-//            .Builder(requireActivity().contentResolver,
-//                MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-//                contentValues)
-//            .build()
-//
-//        imageCapture.takePicture(
-//            outputOptions,
-//            ContextCompat.getMainExecutor(requireContext()),
-//            object : ImageCapture.OnImageSavedCallback {
-//                override fun onError(exc: ImageCaptureException) {
-//                }
-//                override fun onImageSaved(output: ImageCapture.OutputFileResults){
-//                    output.savedUri?.let {
-//                        lifecycleScope.launch(Dispatchers.Main) {
-//                            val bitmap = withContext(Dispatchers.Main) {
-//                                return@withContext binding.fragmentCapturingViewFinder.bitmap
-//                            }
-//                            sharedViewModel.capturedBitmap = bitmap
-//                           findNavController().navigate(R.id.action_capturingFragment_to_cropFragment)
-//                        }
-//                    }
-//                }
-//            }
-//        )
-//    }
 
     private fun startCamera() {
         val cameraProviderFuture = ProcessCameraProvider.getInstance(requireContext())
@@ -176,8 +137,6 @@ class CapturingFragment : Fragment() {
     }
 
     companion object {
-        private const val TAG = "CameraXApp"
-        private const val FILENAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS"
-
+        private const val TAG = "CapturingFragment"
     }
 }
