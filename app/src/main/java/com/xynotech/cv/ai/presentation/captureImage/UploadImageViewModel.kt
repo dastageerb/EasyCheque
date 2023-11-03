@@ -8,6 +8,7 @@ import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.xynotech.cv.ai.domain.UploadCheckRepository
+import com.xynotech.cv.ai.utils.NetworkResource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
@@ -30,24 +31,22 @@ class UploadImageViewModel @Inject constructor(
     private val uploadCheckRepository: UploadCheckRepository
 ) : ViewModel() {
 
-    val state = MutableStateFlow(View.GONE)
+    val state : MutableStateFlow<NetworkResource<Any>> = MutableStateFlow(NetworkResource.Loading())
+
     fun uploadImage(bitmap: Bitmap, qrText:String) = viewModelScope.launch(Dispatchers.IO) {
         try {
-            state.value = View.VISIBLE
             val multipart = createMultipartWithBitmap(bitmap)
-            val response = async {
-                uploadCheckRepository.uploadCheck("", multipart)
+            val response = uploadCheckRepository.uploadCheck(qrText, multipart)
+            if (response.isSuccessful) {
+                state.value = NetworkResource.Success(response.body())
+            } else {
+                state.value = NetworkResource.Error("Something went wrong")
             }
-            val  res = response.await()
-            Log.d("1234", "uploadImage: "+res.body())
-            Log.d("1234", "uploadImage: "+res.errorBody())
-            Log.d("1234", "uploadImage: "+res.code())
-            state.value = View.GONE
         }catch (e:Exception) {
+            state.value = NetworkResource.Error(e.message)
             Log.d("1234", "uploadImage: "+e.message)
         }
     }
-
 
     private fun createMultipartWithBitmap(bitmap: Bitmap): MultipartBody.Part {
         val bos = ByteArrayOutputStream()
