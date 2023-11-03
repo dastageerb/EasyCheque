@@ -4,8 +4,8 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
-import com.xynotech.cv.ai.R
-import com.xynotech.cv.ai.databinding.ActivityMainBinding
+import com.xynotech.converso.ai.R
+import com.xynotech.converso.ai.databinding.ActivityMainBinding
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint

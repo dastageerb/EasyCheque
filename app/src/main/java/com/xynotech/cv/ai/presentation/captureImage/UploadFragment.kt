@@ -5,13 +5,13 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import com.xynotech.cv.ai.databinding.FragmentUploadBinding
+import com.xynotech.converso.ai.databinding.FragmentUploadBinding
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class UploadFragment : Fragment() {
 
-    var _binding:FragmentUploadBinding? = null
+    var _binding: FragmentUploadBinding? = null
     val binding get() = _binding!!
 
     override fun onCreateView(

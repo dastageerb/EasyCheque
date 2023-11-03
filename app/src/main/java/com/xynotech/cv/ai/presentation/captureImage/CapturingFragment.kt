@@ -1,14 +1,11 @@
 package com.xynotech.cv.ai.presentation.captureImage
 
 import android.Manifest
-import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
-import android.provider.MediaStore
 import android.provider.Settings
 import android.util.Log
 import android.view.LayoutInflater
@@ -18,7 +15,6 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
-import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
@@ -32,8 +28,6 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.text.SimpleDateFormat
-import java.util.Locale
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
@@ -75,7 +69,17 @@ class CapturingFragment : Fragment() {
         }
 
         binding.fragmentCaptureTakePictureButton.setOnClickListener {
-            takePhoto()
+            captureViewFinder()
+        }
+    }
+
+    private fun captureViewFinder() {
+        lifecycleScope.launch {
+            val bitmap = withContext(Dispatchers.Main) {
+                return@withContext binding.fragmentCapturingViewFinder.bitmap
+            }
+            sharedViewModel.capturedBitmap = bitmap
+            findNavController().navigate(R.id.action_capturingFragment_to_cropFragment)
         }
     }
 
@@ -109,44 +113,44 @@ class CapturingFragment : Fragment() {
             })
     }
 
-    private fun takePhoto() {
-        val imageCapture = imageCapture ?: return
-        val name = SimpleDateFormat(FILENAME_FORMAT, Locale.US)
-            .format(System.currentTimeMillis())
-        val contentValues = ContentValues().apply {
-            put(MediaStore.MediaColumns.DISPLAY_NAME, name)
-            put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
-            if(Build.VERSION.SDK_INT > Build.VERSION_CODES.P) {
-                put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/CameraX-Image")
-            }
-        }
-
-        val outputOptions = ImageCapture.OutputFileOptions
-            .Builder(requireActivity().contentResolver,
-                MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-                contentValues)
-            .build()
-
-        imageCapture.takePicture(
-            outputOptions,
-            ContextCompat.getMainExecutor(requireContext()),
-            object : ImageCapture.OnImageSavedCallback {
-                override fun onError(exc: ImageCaptureException) {
-                }
-                override fun onImageSaved(output: ImageCapture.OutputFileResults){
-                    output.savedUri?.let {
-                        lifecycleScope.launch(Dispatchers.Main) {
-                            val bitmap = withContext(Dispatchers.Main) {
-                                return@withContext binding.fragmentCapturingViewFinder.bitmap
-                            }
-                            sharedViewModel.capturedBitmap = bitmap
-                           findNavController().navigate(R.id.action_capturingFragment_to_cropFragment)
-                        }
-                    }
-                }
-            }
-        )
-    }
+//    private fun takePhoto() {
+//        val imageCapture = imageCapture ?: return
+//        val name = SimpleDateFormat(FILENAME_FORMAT, Locale.US)
+//            .format(System.currentTimeMillis())
+//        val contentValues = ContentValues().apply {
+//            put(MediaStore.MediaColumns.DISPLAY_NAME, name)
+//            put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
+//            if(Build.VERSION.SDK_INT > Build.VERSION_CODES.P) {
+//                put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/CameraX-Image")
+//            }
+//        }
+//
+//        val outputOptions = ImageCapture.OutputFileOptions
+//            .Builder(requireActivity().contentResolver,
+//                MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+//                contentValues)
+//            .build()
+//
+//        imageCapture.takePicture(
+//            outputOptions,
+//            ContextCompat.getMainExecutor(requireContext()),
+//            object : ImageCapture.OnImageSavedCallback {
+//                override fun onError(exc: ImageCaptureException) {
+//                }
+//                override fun onImageSaved(output: ImageCapture.OutputFileResults){
+//                    output.savedUri?.let {
+//                        lifecycleScope.launch(Dispatchers.Main) {
+//                            val bitmap = withContext(Dispatchers.Main) {
+//                                return@withContext binding.fragmentCapturingViewFinder.bitmap
+//                            }
+//                            sharedViewModel.capturedBitmap = bitmap
+//                           findNavController().navigate(R.id.action_capturingFragment_to_cropFragment)
+//                        }
+//                    }
+//                }
+//            }
+//        )
+//    }
 
     private fun startCamera() {
         val cameraProviderFuture = ProcessCameraProvider.getInstance(requireContext())

@@ -6,7 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.activityViewModels
-import com.xynotech.cv.ai.databinding.FragmentCropBinding
+import com.xynotech.converso.ai.databinding.FragmentCropBinding
 import dagger.hilt.android.AndroidEntryPoint
 
 
