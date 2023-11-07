@@ -1,5 +1,6 @@
 package com.xynotech.cv.ai.data
 
+import com.xynotech.cv.ai.domain.CheckVerificationResponse
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import retrofit2.Response
@@ -13,5 +14,5 @@ interface UploadCheckApiService {
     @POST("upload-image")
     suspend fun uploadImage(
         @Part("qr-code")code:RequestBody,
-        @Part image:MultipartBody.Part) : Response<Any>
+        @Part image:MultipartBody.Part) : Response<CheckVerificationResponse>
 }

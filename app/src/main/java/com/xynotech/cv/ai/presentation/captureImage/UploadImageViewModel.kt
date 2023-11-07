@@ -7,6 +7,7 @@ import android.view.View
 import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.xynotech.cv.ai.domain.CheckVerificationResponse
 import com.xynotech.cv.ai.domain.UploadCheckRepository
 import com.xynotech.cv.ai.utils.NetworkResource
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -31,14 +32,14 @@ class UploadImageViewModel @Inject constructor(
     private val uploadCheckRepository: UploadCheckRepository
 ) : ViewModel() {
 
-    val state : MutableStateFlow<NetworkResource<Any>> = MutableStateFlow(NetworkResource.Loading())
+    val state : MutableStateFlow<NetworkResource<CheckVerificationResponse>> = MutableStateFlow(NetworkResource.Loading())
 
     fun uploadImage(bitmap: Bitmap, qrText:String) = viewModelScope.launch(Dispatchers.IO) {
         try {
             val multipart = createMultipartWithBitmap(bitmap)
             val response = uploadCheckRepository.uploadCheck(qrText, multipart)
             if (response.isSuccessful) {
-                state.value = NetworkResource.Success(response.body())
+                state.value = NetworkResource.Success(response.body() )
             } else {
                 state.value = NetworkResource.Error("Something went wrong")
             }

@@ -5,5 +5,5 @@ import retrofit2.Response
 
 interface UploadCheckRepository {
 
-    suspend fun uploadCheck(text:String, image: MultipartBody.Part) : Response<Any>
+    suspend fun uploadCheck(text:String, image: MultipartBody.Part) : Response<CheckVerificationResponse>
 }

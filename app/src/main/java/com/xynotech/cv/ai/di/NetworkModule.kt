@@ -5,11 +5,10 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
-import retrofit2.converter.moshi.MoshiConverterFactory
+import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 
@@ -24,7 +23,7 @@ object NetworkModule
         val loggingInterceptor = HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BASIC)
         return OkHttpClient.Builder()
             .addInterceptor(loggingInterceptor)
-            .readTimeout(30, TimeUnit.SECONDS)
+            .readTimeout(1, TimeUnit.MINUTES)
             .connectTimeout(1, TimeUnit.MINUTES)
             .writeTimeout(1,TimeUnit.MINUTES)
 
@@ -37,7 +36,7 @@ object NetworkModule
         return Retrofit.Builder()
             .client(client)
             .baseUrl("https://d317-2400-adc1-178-8b00-88fd-2f70-af62-cb8a.ngrok-free.app/")
-            .addConverterFactory(MoshiConverterFactory.create())
+            .addConverterFactory(GsonConverterFactory.create())
             .build()
     }
 
