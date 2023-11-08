@@ -4,10 +4,8 @@ package com.xynotech.cv.ai.domain
 import com.google.gson.annotations.SerializedName
 
 data class CheckVerificationResponse(
-    @SerializedName("extracted_text")
-    val extractedText: ExtractedText,
+    @SerializedName("comparison")
+    val comparison: Comparison,
     @SerializedName("message")
-    val message: String,
-    @SerializedName("verification")
-    val verification: String
+    val message: String
 )

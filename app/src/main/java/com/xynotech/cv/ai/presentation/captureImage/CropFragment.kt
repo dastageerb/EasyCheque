@@ -1,9 +1,11 @@
 package com.xynotech.cv.ai.presentation.captureImage
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
@@ -17,6 +19,7 @@ import com.xynotech.cv.ai.utils.show
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import java.lang.Exception
 
 
 @AndroidEntryPoint
@@ -53,11 +56,47 @@ class CropFragment : Fragment() {
                             binding.processingCard.hide()
                             binding.errorCard.hide()
 
-                            binding.txtName.text = "Name : "+it.data?.extractedText?.name
+                            binding.txtName.text = "Name : "+it.data?.comparison?.extractedText?.name
 
-                            binding.txtamount.text = "Amount: "+it.data?.extractedText?.amountInDigits
+                            binding.txtamount.text = "Amount : "+it.data?.comparison?.extractedText?.amountInDigits
 
-                            binding.txtAmountInWords.text = "Amount in Digits : "+it.data?.extractedText?.amountInWords
+                            binding.txtAmountInWords.text = "Amount in Words : "+it.data?.comparison?.extractedText?.amountInWords
+
+                            try {
+                                val score = it.data?.comparison?.confidence ?:0.0
+                                if (score > 80) {
+                                        binding.txtConfidenceValue.setTextColor(
+                                            ContextCompat.getColor(requireContext(), R.color.color_green)
+                                        )
+
+
+                                } else if ( score > 60 && score <80) {
+
+                                    binding.txtConfidenceValue.setTextColor(
+                                        ContextCompat.getColor(requireContext(), R.color.color_orange)
+                                    )
+
+                                    binding.txtConfidenceValue.text = "Consult agent to verify signature"
+
+
+                                }
+                                else  {
+                                    binding.txtConfidenceValue.setTextColor(
+                                        ContextCompat.getColor(requireContext(), R.color.color_red)
+                                    )
+
+                                    binding.txtConfidenceValue.text = "Signature not verified"
+
+                                }
+
+                            } catch (e:Exception) {
+
+                            }
+
+                            binding.txtVerified.text = if (compareAmounts(it.data?.comparison?.
+                                extractedText?.amountInWords?:"",
+                                it.data?.comparison?.extractedText?.converted?:
+                                "")) "Amount verified" else "Amount does not match"
 
                             binding.successCard.show()
                         }
@@ -95,12 +134,29 @@ class CropFragment : Fragment() {
 
     }
 
+    fun refineText(rawText: String): String {
+        val  commaRefinedText = rawText
+            .replace(",", "")
+            .replace("-","")
+            .replace("rupees","")
+            .replace("only","")
+            .trim()
+        return commaRefinedText.lowercase();
+    }
 
+    fun compareAmounts(amount1: String, amount2: String): Boolean {
+
+        val amt1 = this.refineText(amount1)
+        val amt2 = this.refineText(amount2)
+
+        Log.d("1234", "compareAmounts: "+amount1 + " -> "+amt1)
+        Log.d("1234", "compareAmounts: "+amount2 + " -> "+amt2)
+        return amt1 == amt2
+    }
 
     override fun onDestroyView() {
         super.onDestroyView()
         sharedViewModel.capturedBitmap = null
         _binding = null
     }
-
 }

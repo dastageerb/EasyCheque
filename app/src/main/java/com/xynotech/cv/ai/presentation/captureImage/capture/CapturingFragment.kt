@@ -32,13 +32,15 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.navigation.fragment.findNavController
 import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.common.InputImage
+import com.xynotech.converso.ai.R
 import com.xynotech.converso.ai.databinding.FragmentCapturingBinding
 import com.xynotech.cv.ai.presentation.captureImage.CaptureSharedViewModel
-import com.xynotech.cv.ai.utils.show
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
@@ -91,18 +93,21 @@ class CapturingFragment : Fragment() {
         }
 
         binding.fragmentCaptureTakePictureButton.setOnClickListener {
-//            takePhoto()
-            captureViewFinder()
+            if (sharedViewModel.scannedQRResult == null) {
+                captureViewFinder()
+            }
+            else {
+                lifecycleScope.launch {
+                    sharedViewModel.capturedBitmap = getViewFinderImage()
+                }
+                findNavController().navigate(R.id.action_capturingFragment_to_cropFragment)
+            }
         }
-
-
 
 
         viewLifecycleOwner.lifecycleScope.launch {
             lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 sharedViewModel.scanState.collect {
-                   // val f: Rect = it
-               //     Bitmap.createBitmap(bmp, f.left, f.top, f.width(), f.height())
 
                     Toast.makeText(requireContext(), "Scanned", Toast.LENGTH_SHORT).show()
                 }
@@ -112,173 +117,217 @@ class CapturingFragment : Fragment() {
     }
 
 
-//    @SuppressLint("RestrictedApi")
-//    fun startCamera() {
-//
-//        val cameraProviderFuture = ProcessCameraProvider.getInstance(requireContext())
-//
-//        cameraProviderFuture.addListener(Runnable {
-//            cameraProvider = cameraProviderFuture.get()
-//
-//            val resolution = Size(1600, 1200)
-//            preview = Preview.Builder()
-//                .build()
-//            imageCapture = ImageCapture.Builder()
-//                .setCaptureMode(CAPTURE_MODE_MINIMIZE_LATENCY)
-//                .setMaxResolution(resolution)
-//                .build()
-//
-//
-//            imageAnalysis = ImageAnalysis.Builder()
-//                .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-//                .build()
-//
-//
-//            val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
-//
-//
-//
-//            try {
-//                cameraProvider.unbindAll()
-//
-//                cameraProvider.bindToLifecycle(
-//                    viewLifecycleOwner,
-//                    cameraSelector,
-//                    preview,
-//                    imageCapture,
-//                    imageAnalysis
-//                )
-//
-//                preview.setSurfaceProvider(binding.fragmentCapturingViewFinder.surfaceProvider)
-//            } catch (exc: Exception) {
-//                // Handle errors
-//            }
-//        }, ContextCompat.getMainExecutor(requireContext()))
-//    }
+    fun startCamera() {
 
-
-    private fun takePhoto() {
-        val imageCapture = imageCapture ?: return
-        val name = SimpleDateFormat(FILENAME_FORMAT, Locale.US)
-            .format(System.currentTimeMillis())
-        val contentValues = ContentValues().apply {
-            put(MediaStore.MediaColumns.DISPLAY_NAME, name)
-            put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
-            if(Build.VERSION.SDK_INT > Build.VERSION_CODES.P) {
-                put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/CameraX-Image")
-            }
-        }
-        val outputOptions = ImageCapture.OutputFileOptions
-            .Builder(requireActivity().contentResolver,
-                MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-                contentValues)
-            .build()
-        imageCapture.takePicture(
-            outputOptions,
-            ContextCompat.getMainExecutor(requireContext()),
-            object : ImageCapture.OnImageSavedCallback {
-                override fun onError(exc: ImageCaptureException) {
-                }
-                override fun onImageSaved(output: ImageCapture.OutputFileResults){
-                    output.savedUri?.let {
-
-                        val bitmap = convertUriToBitmap(it)
-
-                        if (bitmap != null) {
-                            scanQRCode(bitmap)
-                        }
-                    }
-                }
-            }
-        )
-    }
-
-
-    fun convertUriToBitmap(uri: Uri): Bitmap? {
-        val resolver = requireContext().contentResolver
-        val inputStream = resolver.openInputStream(uri) ?: return null
-
-        val bitmap = BitmapFactory.decodeStream(inputStream)
-
-        // Compress the bitmap to 50% quality.
-        val compressedBitmap = Bitmap.createBitmap(bitmap)
-        compressedBitmap.compress(Bitmap.CompressFormat.JPEG, 50, ByteArrayOutputStream())
-
-        inputStream.close()
-
-        return compressedBitmap
-    }
-
-    private fun startCamera() {
         val cameraProviderFuture = ProcessCameraProvider.getInstance(requireContext())
-        cameraProviderFuture.addListener({
-            val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
-            val preview = Preview.Builder()
-                .build()
 
+        cameraProviderFuture.addListener(Runnable {
+            cameraProvider = cameraProviderFuture.get()
+
+            preview = Preview.Builder()
+                .build()
             imageCapture = ImageCapture.Builder()
                 .build()
+
+
+            imageAnalysis = ImageAnalysis.Builder()
+                .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                .build()
+
+
             val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
+
+            imageAnalysis.setAnalyzer(cameraExecutor) {
+                if (sharedViewModel.scannedQRResult == null) {
+                    viewLifecycleOwner.lifecycleScope.launch() {
+                        getViewFinderImage()?.let { it1 -> scanQRCode(it1) }
+                    }
+                }
+
+            it.close()
+            //sharedViewModel.scanWithMlKit(it)
+            }
+
             try {
                 cameraProvider.unbindAll()
-                cameraProvider.bindToLifecycle(this,cameraSelector, preview,imageCapture)
+
+                cameraProvider.bindToLifecycle(
+                    viewLifecycleOwner,
+                    cameraSelector,
+                    preview,
+                    imageCapture,
+                    imageAnalysis
+                )
+
                 preview.setSurfaceProvider(binding.fragmentCapturingViewFinder.surfaceProvider)
-            } catch(exc: Exception) {
-                Log.e(TAG, "Use case binding failed", exc)
+            } catch (exc: Exception) {
+                // Handle errors
+                Log.d(TAG, "startCamera: "+exc.message)
             }
         }, ContextCompat.getMainExecutor(requireContext()))
     }
 
 
-    fun scanQRCode(bitmap: Bitmap) {
-        Log.d(TAG, "running: "+bitmap)
+//    private fun takePhoto() {
+//        val imageCapture = imageCapture ?: return
+//        val name = SimpleDateFormat(FILENAME_FORMAT, Locale.US)
+//            .format(System.currentTimeMillis())
+//        val contentValues = ContentValues().apply {
+//            put(MediaStore.MediaColumns.DISPLAY_NAME, name)
+//            put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
+//            if(Build.VERSION.SDK_INT > Build.VERSION_CODES.P) {
+//                put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/CameraX-Image")
+//            }
+//        }
+//        val outputOptions = ImageCapture.OutputFileOptions
+//            .Builder(requireActivity().contentResolver,
+//                MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+//                contentValues)
+//            .build()
+//        imageCapture.takePicture(
+//            outputOptions,
+//            ContextCompat.getMainExecutor(requireContext()),
+//            object : ImageCapture.OnImageSavedCallback {
+//                override fun onError(exc: ImageCaptureException) {
+//                }
+//                override fun onImageSaved(output: ImageCapture.OutputFileResults){
+//                    output.savedUri?.let {
+//
+//                        val bitmap = convertUriToBitmap(it)
+//
+//                        if (bitmap != null) {
+//                          //  scanQRCode(bitmap, n)
+//                        }
+//                    }
+//                }
+//            }
+//        )
+//    }
+
+
+//    fun convertUriToBitmap(uri: Uri): Bitmap? {
+//        val resolver = requireContext().contentResolver
+//        val inputStream = resolver.openInputStream(uri) ?: return null
+//
+//        val bitmap = BitmapFactory.decodeStream(inputStream)
+//
+//        // Compress the bitmap to 50% quality.
+//        val compressedBitmap = Bitmap.createBitmap(bitmap)
+//        compressedBitmap.compress(Bitmap.CompressFormat.JPEG, 45, ByteArrayOutputStream())
+//
+//        inputStream.close()
+//
+//        return compressedBitmap
+//    }
+
+//    private fun startCamera() {
+//        val cameraProviderFuture = ProcessCameraProvider.getInstance(requireContext())
+//        cameraProviderFuture.addListener({
+//            val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
+//            val preview = Preview.Builder()
+//                .build()
+//
+//            imageCapture = ImageCapture.Builder()
+//                .build()
+//            val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
+//            try {
+//                cameraProvider.unbindAll()
+//                cameraProvider.bindToLifecycle(this,cameraSelector, preview,imageCapture)
+//                preview.setSurfaceProvider(binding.fragmentCapturingViewFinder.surfaceProvider)
+//            } catch(exc: Exception) {
+//                Log.e(TAG, "Use case binding failed", exc)
+//            }
+//        }, ContextCompat.getMainExecutor(requireContext()))
+//    }
+
+
+    private fun scanQRCode(bitmap: Bitmap) {
         val image = InputImage.fromBitmap(bitmap, 0)
         val scanner = BarcodeScanning.getClient()
-
-        val result = scanner.process(image)
+        scanner.process(image)
             .addOnSuccessListener { barcodes ->
                 try {
-                    Toast.makeText(requireContext(),""+ barcodes[0].rawValue, Toast.LENGTH_SHORT).show()
-                    Log.d(TAG, "scanQRCode: "+ barcodes[0].rawValue)
-
+                    if (barcodes.isNotEmpty()) {
+                        if (sharedViewModel.scannedQRResult == null) {
+                            binding.imageView.background = null
+                            binding.imageView.setImageResource(R.drawable.check_green_frame)
+                            Toast.makeText(requireContext(),"Qr code scanned", Toast.LENGTH_SHORT).show()
+                            Log.d(TAG, "scanQRCode: "+ barcodes[0].rawValue)
+                            sharedViewModel.scannedQRResult = barcodes[0].rawValue
+                        }
+                    }
                 } catch (e:Exception) {
 
                 }
             }
-            .addOnFailureListener {
+    }
 
+    private fun scanAndNavigate(bitmap: Bitmap) {
+        val image = InputImage.fromBitmap(bitmap, 0)
+        val scanner = BarcodeScanning.getClient()
+        scanner.process(image)
+            .addOnSuccessListener { barcodes ->
+                try {
+//                    if (sharedViewModel.scannedQRResult == null) {
+//                        Toast.makeText(requireContext(),"Qr code scanned", Toast.LENGTH_SHORT).show()
+//                    }
+                    Log.d(TAG, "scanQRCode: "+ barcodes[0].rawValue)
+                    sharedViewModel.scannedQRResult = barcodes[0].rawValue
+                    navigate()
+                } catch (e:Exception) {
 
-                Log.d(TAG, "scanQRCode: "+it.message)
-
-                // Task failed with an exception
-                // ...
+                }
             }
-        Log.d(TAG, "scanQRCode: "+result)
+        lifecycleScope.launch(Dispatchers.Main) {
+            delay(200)
+            if (sharedViewModel.scannedQRResult == null) {
+                Toast.makeText(requireContext(), "Please Recapture And focus", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 
     private fun captureViewFinder() {
-        lifecycleScope.launch {
-            val originalBitmap = withContext(Dispatchers.Main) {
-                return@withContext binding.fragmentCapturingViewFinder.bitmap
+        if (sharedViewModel.scannedQRResult != null) {
+            captureAndNavigateIfScanned()
+        } else {
+            viewLifecycleOwner.lifecycleScope.launch {
+                val originBitmap = getViewFinderImage()
+                sharedViewModel.capturedBitmap =  originBitmap
+                scanImage(originBitmap)
             }
-            if (originalBitmap != null) {
+        }
 
+
+    }
+
+    private fun scanImage(originalBitmap: Bitmap?) {
+        lifecycleScope.launch(Dispatchers.IO) {
+            if (originalBitmap != null) {
                 val targetWidth: Int = originalBitmap.height * 16 / 9
                 val targetHeight: Int = originalBitmap.height
                 val resizedBitmap = Bitmap.createScaledBitmap(originalBitmap, targetWidth, targetHeight, true)
-
-                binding.imageView.show()
-                binding.imageView.setImageBitmap(resizedBitmap)
-
-                scanQRCode(resizedBitmap)
-
-
+                scanAndNavigate(resizedBitmap)
             }
-
-            sharedViewModel.capturedBitmap = originalBitmap
-            //findNavController().navigate(R.id.action_capturingFragment_to_cropFragment)
         }
     }
+
+    suspend fun getViewFinderImage() = withContext(Dispatchers.Main) {
+        binding.fragmentCapturingViewFinder.bitmap
+    }
+
+    fun navigate() {
+        if (findNavController().currentDestination?.id == R.id.capturingFragment) {
+                findNavController().navigate(R.id.action_capturingFragment_to_cropFragment)
+        }
+    }
+
+    fun captureAndNavigateIfScanned() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            sharedViewModel.capturedBitmap = getViewFinderImage()
+        }
+        navigate()
+    }
+
 
     private fun Context.hasCameraPermission():Boolean {
         return  (ContextCompat.checkSelfPermission(this,
@@ -312,6 +361,6 @@ class CapturingFragment : Fragment() {
 
     companion object {
         private const val FILENAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS"
-        private const val TAG = "CapturingFragment"
+        const val TAG = "CapturingFragment"
     }
 }
