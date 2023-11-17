@@ -2,8 +2,9 @@
     <!-- Base application theme. -->
     <style name="Base.Theme.Converso" parent="Theme.Material3.DayNight.NoActionBar">
          Customize your light theme here.
-         <item name="colorPrimary">#7C0291</item>
-        <item name="colorSecondary">#560165</item>
+         <item name="colorPrimary">@color/color_primary_light</item>
+        <item name="colorSecondary">@color/color_primary_dark</item>
+        <item name="fontFamily">@font/arial</item>
     </style>
 
     <style name="Theme.Converso" parent="Base.Theme.Converso" />
