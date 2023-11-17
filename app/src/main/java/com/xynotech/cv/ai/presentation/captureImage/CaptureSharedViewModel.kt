@@ -2,6 +2,8 @@
 package com.xynotech.cv.ai.presentation.captureImage
 
 import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Matrix
 import android.util.Log
 import androidx.annotation.OptIn
 import androidx.camera.core.ExperimentalGetImage
@@ -71,4 +73,15 @@ class CaptureSharedViewModel @Inject constructor() : ViewModel() {
             }
         }
 
+
+    fun rotateBitmap(original: Bitmap, degrees: Float): Bitmap? {
+        val width = original.width
+        val height = original.height
+        val matrix = Matrix()
+        matrix.preRotate(degrees)
+        val rotatedBitmap = Bitmap.createBitmap(original, 0, 0, width, height, matrix, true)
+        val canvas = Canvas(rotatedBitmap)
+        canvas.drawBitmap(original, 5.0f, 0.0f, null)
+        return rotatedBitmap
+    }
 }

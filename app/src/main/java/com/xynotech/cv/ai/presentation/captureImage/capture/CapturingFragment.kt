@@ -1,29 +1,26 @@
 package com.xynotech.cv.ai.presentation.captureImage.capture
 
 import android.Manifest
-import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
-import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
-import android.provider.MediaStore
 import android.provider.Settings
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.AlphaAnimation
+import android.view.animation.Animation
+import android.view.animation.LinearInterpolator
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ExperimentalGetImage
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageCapture
-import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
@@ -43,9 +40,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.io.ByteArrayOutputStream
-import java.text.SimpleDateFormat
-import java.util.Locale
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
@@ -83,7 +77,6 @@ class CapturingFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
         cameraExecutor = Executors.newSingleThreadExecutor()
 
         if (requireContext().hasCameraPermission()) {
@@ -91,6 +84,15 @@ class CapturingFragment : Fragment() {
         } else {
             multiPermissionCallback.launch(arrayOf(Manifest.permission.CAMERA))
         }
+
+
+        val animation: Animation =
+            AlphaAnimation(1f, 0.1f)
+        animation.setDuration(150)
+        animation.setInterpolator(LinearInterpolator())
+        animation.setRepeatCount(Animation.INFINITE)
+        animation.setRepeatMode(Animation.REVERSE)
+        binding.imageView.startAnimation(animation)
 
         binding.fragmentCaptureTakePictureButton.setOnClickListener {
             if (sharedViewModel.scannedQRResult == null) {
@@ -100,7 +102,7 @@ class CapturingFragment : Fragment() {
                 lifecycleScope.launch {
                     sharedViewModel.capturedBitmap = getViewFinderImage()
                 }
-                findNavController().navigate(R.id.action_capturingFragment_to_cropFragment)
+                findNavController().navigate(com.xynotech.converso.ai.R.id.action_capturingFragment_to_processFragment)
             }
         }
 
@@ -108,7 +110,6 @@ class CapturingFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 sharedViewModel.scanState.collect {
-
                     Toast.makeText(requireContext(), "Scanned", Toast.LENGTH_SHORT).show()
                 }
             }
@@ -250,7 +251,8 @@ class CapturingFragment : Fragment() {
                     if (barcodes.isNotEmpty()) {
                         if (sharedViewModel.scannedQRResult == null) {
                             binding.imageView.background = null
-                            binding.imageView.setImageResource(R.drawable.check_green_frame)
+                            binding.imageView.clearAnimation()
+                            binding.imageView.setImageResource(R.drawable.cheque_scan_green)
                             Toast.makeText(requireContext(),"Qr code scanned", Toast.LENGTH_SHORT).show()
                             Log.d(TAG, "scanQRCode: "+ barcodes[0].rawValue)
                             sharedViewModel.scannedQRResult = barcodes[0].rawValue
@@ -316,8 +318,8 @@ class CapturingFragment : Fragment() {
     }
 
     fun navigate() {
-        if (findNavController().currentDestination?.id == R.id.capturingFragment) {
-                findNavController().navigate(R.id.action_capturingFragment_to_cropFragment)
+        if (findNavController().currentDestination?.id == com.xynotech.converso.ai.R.id.capturingFragment) {
+                findNavController().navigate(com.xynotech.converso.ai.R.id.action_capturingFragment_to_processFragment)
         }
     }
 

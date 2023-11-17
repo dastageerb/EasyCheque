@@ -10,25 +10,38 @@
         android:name="com.xynotech.cv.ai.presentation.captureImage.capture.CapturingFragment"
         android:label="CapturingFragment" >
         <action
-            android:id="@+id/action_capturingFragment_to_cropFragment"
-            app:destination="@id/cropFragment" />
+            android:id="@+id/action_capturingFragment_to_processFragment"
+            app:destination="@id/processFragment" />
     </fragment>
     <fragment
-        android:id="@+id/cropFragment"
-        android:name="com.xynotech.cv.ai.presentation.captureImage.CropFragment"
-        android:label="fragment_crop"
-        tools:layout="@layout/fragment_crop" >
+        android:id="@+id/processFragment"
+        android:name="com.xynotech.cv.ai.presentation.captureImage.ProcessFragment"
+        android:label="fragment_process" >
         <action
-            android:id="@+id/action_cropFragment_to_introFragment"
+            android:id="@+id/action_processFragment_to_introFragment"
             app:destination="@id/introFragment" />
+        <action
+            android:id="@+id/action_processFragment_to_detailsFragment"
+            app:destination="@id/detailsFragment" />
     </fragment>
     <fragment
         android:id="@+id/introFragment"
         android:name="com.xynotech.cv.ai.presentation.captureImage.IntroFragment"
-        android:label="fragment_upload"
         tools:layout="@layout/fragment_intro" >
         <action
             android:id="@+id/action_introFragment_to_capturingFragment"
             app:destination="@id/capturingFragment" />
     </fragment>
+    <fragment
+        android:id="@+id/detailsFragment"
+        android:name="com.xynotech.cv.ai.presentation.DetailsFragment"
+        android:label="DetailsFragment" >
+        <action
+            android:id="@+id/action_detailsFragment_to_signatureVerificationFragment"
+            app:destination="@id/signatureVerificationFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/signatureVerificationFragment"
+        android:name="com.xynotech.cv.ai.presentation.SignatureVerificationFragment"
+        android:label="SignatureVerificationFragment" />
 </navigation>
