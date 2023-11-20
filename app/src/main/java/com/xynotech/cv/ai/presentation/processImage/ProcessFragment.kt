@@ -1,4 +1,4 @@
-package com.xynotech.cv.ai.presentation.captureImage
+package com.xynotech.cv.ai.presentation.processImage
 
 import android.os.Bundle
 import android.util.Log
@@ -16,13 +16,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.ComposeView
@@ -37,10 +35,17 @@ import androidx.compose.ui.unit.sp
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.fragment.findNavController
 import com.xynotech.converso.ai.R
+import com.xynotech.cv.ai.domain.CheckVerificationResponse
+import com.xynotech.cv.ai.presentation.captureImage.CaptureSharedViewModel
+import com.xynotech.cv.ai.presentation.captureImage.UploadImageViewModel
+import com.xynotech.cv.ai.utils.CustomDialog
+import com.xynotech.cv.ai.utils.DialogUiState
 import com.xynotech.cv.ai.utils.GreenButton
 import com.xynotech.cv.ai.utils.GreyButton
+import com.xynotech.cv.ai.utils.NetworkResource
 import com.xynotech.cv.ai.utils.PoweredByXynotechBlack
 import com.xynotech.cv.ai.utils.buttonGrey
 import com.xynotech.cv.ai.utils.greenColor
@@ -54,6 +59,8 @@ class ProcessFragment : Fragment() {
 
     val uploadViewModel: UploadImageViewModel by viewModels()
 
+    val processViewModel: ProcessViewModel by viewModels()
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -61,7 +68,43 @@ class ProcessFragment : Fragment() {
         return ComposeView(requireContext()).apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
+                val uiState = processViewModel.uiState.collectAsStateWithLifecycle()
+
                 ProcessFragmentComposable()
+
+                when(uiState.value) {
+                    is NetworkResource.Success -> {
+                        sharedViewModel.details = (uiState.value as NetworkResource.Success<CheckVerificationResponse>).data
+
+                        findNavController().navigate(R.id.action_processFragment_to_detailsFragment)
+                    }
+
+                    is NetworkResource.Loading -> {
+                        CustomDialog(
+                            dialogUiState = DialogUiState.LOADING,
+                            shouldDismiss = false,
+                            onDismiss = {  },
+                            text = "Processing Check..."
+                        )
+                    }
+
+                    is NetworkResource.Error -> {
+                        CustomDialog(
+                            dialogUiState = DialogUiState.ERROR,
+                            shouldDismiss = true,
+                            onDismiss = {
+                                        processViewModel.onRemoveErrorState()
+                            },
+                            text = "Something went wrong"
+                        )
+                    }
+
+                    is NetworkResource.NONE -> {
+
+                    }
+                }
+
+
             }
         }
     }
@@ -140,8 +183,7 @@ class ProcessFragment : Fragment() {
                     modifier = Modifier
                         .fillMaxWidth(0.9f)
                         .background(
-                            greenColor()
-                            , shape = RoundedCornerShape(10)
+                            greenColor(), shape = RoundedCornerShape(10)
                         )
                         .height(40.dp)
                     , text = "CONTINUE",

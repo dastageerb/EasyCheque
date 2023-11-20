@@ -21,6 +21,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.xynotech.converso.ai.R
 
+
+
+
+
+
 @Composable
 fun themeGradient() = Brush.verticalGradient(
     listOf(

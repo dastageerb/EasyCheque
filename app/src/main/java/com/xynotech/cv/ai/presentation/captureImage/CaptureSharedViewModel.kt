@@ -12,6 +12,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.common.InputImage
+import com.xynotech.cv.ai.domain.CheckVerificationResponse
 import com.xynotech.cv.ai.presentation.captureImage.capture.CapturingFragment
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
@@ -84,4 +85,7 @@ class CaptureSharedViewModel @Inject constructor() : ViewModel() {
         canvas.drawBitmap(original, 5.0f, 0.0f, null)
         return rotatedBitmap
     }
+
+
+    var details :CheckVerificationResponse? = null
 }

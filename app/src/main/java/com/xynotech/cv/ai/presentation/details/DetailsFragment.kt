@@ -1,4 +1,4 @@
-package com.xynotech.cv.ai.presentation
+package com.xynotech.cv.ai.presentation.details
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -20,7 +20,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CardElevation
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -40,12 +39,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.fragment.findNavController
 import com.xynotech.converso.ai.R
 import com.xynotech.cv.ai.domain.CheckVerificationResponse
-import com.xynotech.cv.ai.domain.Comparison
-import com.xynotech.cv.ai.domain.ExtractedText
+import com.xynotech.cv.ai.presentation.captureImage.CaptureSharedViewModel
 import com.xynotech.cv.ai.presentation.captureImage.UploadImageViewModel
 import com.xynotech.cv.ai.utils.GreenButton
 import com.xynotech.cv.ai.utils.GreyButton
@@ -58,6 +58,9 @@ class DetailsFragment: Fragment() {
 
     val uploadViewModel: UploadImageViewModel by viewModels()
 
+    val detailsViewModel: DetailsViewModel by viewModels()
+
+    val sharedViewModel: CaptureSharedViewModel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -67,15 +70,19 @@ class DetailsFragment: Fragment() {
         return ComposeView(requireContext()).apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
-            DetailsScreenComposable()
+                val uiState = detailsViewModel.uiState.collectAsStateWithLifecycle()
+            DetailsScreenComposable(uiState.value)
 
-
-            //        ProcessFragmentComposable()
             }
     }}
 
+    override fun onStart() {
+        super.onStart()
+        detailsViewModel.onStart(sharedViewModel.details)
+    }
+
     @Composable
-    private fun DetailsScreenComposable() {
+    private fun DetailsScreenComposable(value: CheckVerificationResponse) {
         Box(modifier = Modifier.fillMaxSize()) {
             Column(Modifier, horizontalAlignment = Alignment.CenterHorizontally) {
                 Spacer(modifier = Modifier.height(16.dp))
@@ -100,7 +107,7 @@ class DetailsFragment: Fragment() {
 
                 DetailsItemComposable(
                     modifier = Modifier,
-                    detailType = "Name", R.drawable.person_icon, "Nabeel Baig"
+                    detailType = "Name", R.drawable.person_icon, value.comparison.extractedText.name
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -108,7 +115,7 @@ class DetailsFragment: Fragment() {
                 DetailsItemComposable(
                     detailType = "Amount",
                     imageRes = R.drawable.baseline_money_24,
-                    valueText = "PKR 10,000"
+                    valueText = value.comparison.extractedText.amountInDigits
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -116,7 +123,7 @@ class DetailsFragment: Fragment() {
                 DetailsItemComposable(
                     detailType = "Amount in words",
                     imageRes = R.drawable.pkr_icon,
-                    valueText = "Ten thousand Rupees"
+                    valueText = value.comparison.extractedText.amountInWords
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -160,7 +167,6 @@ class DetailsFragment: Fragment() {
                         .height(60.dp)
                 )
             }
-
         }
     }
 }

@@ -15,7 +15,7 @@
     </fragment>
     <fragment
         android:id="@+id/processFragment"
-        android:name="com.xynotech.cv.ai.presentation.captureImage.ProcessFragment"
+        android:name="com.xynotech.cv.ai.presentation.processImage.ProcessFragment"
         android:label="fragment_process" >
         <action
             android:id="@+id/action_processFragment_to_introFragment"
@@ -34,7 +34,7 @@
     </fragment>
     <fragment
         android:id="@+id/detailsFragment"
-        android:name="com.xynotech.cv.ai.presentation.DetailsFragment"
+        android:name="com.xynotech.cv.ai.presentation.details.DetailsFragment"
         android:label="DetailsFragment" >
         <action
             android:id="@+id/action_detailsFragment_to_signatureVerificationFragment"
