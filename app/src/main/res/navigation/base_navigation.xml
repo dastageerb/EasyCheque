@@ -39,9 +39,23 @@
         <action
             android:id="@+id/action_detailsFragment_to_signatureVerificationFragment"
             app:destination="@id/signatureVerificationFragment" />
+        <action
+            android:id="@+id/action_detailsFragment_to_introFragment"
+            app:destination="@id/introFragment"
+            app:launchSingleTop="true"
+            app:popUpTo="@id/introFragment"
+            app:popUpToInclusive="false"
+            />
     </fragment>
     <fragment
         android:id="@+id/signatureVerificationFragment"
-        android:name="com.xynotech.cv.ai.presentation.SignatureVerificationFragment"
-        android:label="SignatureVerificationFragment" />
+        android:name="com.xynotech.cv.ai.presentation.signatureverification.SignatureVerificationFragment"
+        android:label="SignatureVerificationFragment" >
+        <action
+            app:launchSingleTop="true"
+            app:popUpTo="@id/introFragment"
+            app:popUpToInclusive="false"
+            android:id="@+id/action_signatureVerificationFragment_to_introFragment"
+            app:destination="@id/introFragment" />
+    </fragment>
 </navigation>

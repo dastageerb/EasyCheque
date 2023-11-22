@@ -2,10 +2,8 @@ package com.xynotech.cv.ai.presentation.details
 
 import androidx.lifecycle.ViewModel
 import com.xynotech.cv.ai.domain.CheckVerificationResponse
-import com.xynotech.cv.ai.domain.Comparison
-import com.xynotech.cv.ai.domain.ExtractedText
+import com.xynotech.cv.ai.domain.Data
 import com.xynotech.cv.ai.domain.UploadCheckRepository
-import com.xynotech.cv.ai.utils.NetworkResource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -17,8 +15,8 @@ class DetailsViewModel @Inject constructor( private val uploadCheckRepository: U
 
 
     val _state : MutableStateFlow<CheckVerificationResponse> = MutableStateFlow(
-        CheckVerificationResponse(Comparison(00.00, ExtractedText("","", false, "",
-            "",""),false),"")
+        CheckVerificationResponse(Data("","","",
+            "","","","",false), "",true)
     )
 
     val uiState = _state.asStateFlow()

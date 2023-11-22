@@ -1,9 +1,9 @@
-package com.xynotech.cv.ai.domain
+package com.xynotech.cv.ai.presentation.signatureverification
 
 
 import com.google.gson.annotations.SerializedName
 
-data class CheckVerificationResponse(
+data class VerifyCheckResponse(
     @SerializedName("data")
     var `data`: Data?,
     @SerializedName("message")

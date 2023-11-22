@@ -28,6 +28,8 @@ class CaptureSharedViewModel @Inject constructor() : ViewModel() {
 
     var scannedQRResult: String? = null
 
+    var filePath:String?= null
+
     private var isScanning: Boolean = false
 
 
@@ -87,5 +89,5 @@ class CaptureSharedViewModel @Inject constructor() : ViewModel() {
     }
 
 
-    var details :CheckVerificationResponse? = null
+    var details : CheckVerificationResponse? = null
 }

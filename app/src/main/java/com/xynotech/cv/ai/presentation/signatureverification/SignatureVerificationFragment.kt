@@ -1,67 +1,56 @@
-package com.xynotech.cv.ai.presentation
+package com.xynotech.cv.ai.presentation.signatureverification
 
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
-import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.google.mlkit.vision.common.InputImage
+import androidx.navigation.fragment.findNavController
 import com.xynotech.converso.ai.R
 import com.xynotech.cv.ai.domain.CheckVerificationResponse
-import com.xynotech.cv.ai.domain.Comparison
-import com.xynotech.cv.ai.domain.ExtractedText
-import com.xynotech.cv.ai.presentation.captureImage.UploadImageViewModel
+import com.xynotech.cv.ai.presentation.captureImage.CaptureSharedViewModel
+import com.xynotech.cv.ai.utils.CustomDialog
+import com.xynotech.cv.ai.utils.DialogUiState
 import com.xynotech.cv.ai.utils.GreenButton
 import com.xynotech.cv.ai.utils.GreyButton
 import com.xynotech.cv.ai.utils.ImageWithTextView
 import com.xynotech.cv.ai.utils.NetworkResource
 import com.xynotech.cv.ai.utils.PoweredByXynotechBlack
 import com.xynotech.cv.ai.utils.buttonGrey
-import com.xynotech.cv.ai.utils.font
 import com.xynotech.cv.ai.utils.greenColor
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class SignatureVerificationFragment : Fragment() {
 
-    val uploadViewModel: UploadImageViewModel by activityViewModels()
+    val viewModel: SignatureVerificationViewModel by viewModels()
+
+    val sharedViewModel: CaptureSharedViewModel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -70,15 +59,34 @@ class SignatureVerificationFragment : Fragment() {
     ): View {
         return ComposeView(requireContext()).apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+            sharedViewModel.filePath?.let { viewModel.analyseCheck(it) }
             setContent {
-                val uiState = uploadViewModel.state.collectAsStateWithLifecycle()
+                val uiState = viewModel.uiState.collectAsStateWithLifecycle()
                 when (uiState.value) {
-                    is NetworkResource.Success -> {
-                        (uiState.value as NetworkResource.Success<CheckVerificationResponse>).data?.comparison?.confidence?.let {
-                            SignatureVerificationComposable(confidenceValue = it)
+                    is SignatureVerificationResponse.ApiSuccess -> {
+                        (uiState.value as SignatureVerificationResponse.ApiSuccess<VerifyCheckResponse>).data?.data?.let {
+                            SignatureVerificationComposable(confidenceValue = it.confidence ?: 0.00)
                         } ?: kotlin.run {
                             SignatureVerificationComposable(confidenceValue = -2.00)
                         }
+                    }
+
+                    is SignatureVerificationResponse.Navigate -> {
+                        sharedViewModel.capturedBitmap = null
+                        sharedViewModel.scannedQRResult = null
+                        sharedViewModel.filePath = null
+                        findNavController().navigate(R.id.action_signatureVerificationFragment_to_introFragment)
+                    }
+
+                    is SignatureVerificationResponse.Loading -> {
+                        CustomDialog(
+                            dialogUiState = DialogUiState.LOADING,
+                            shouldDismiss = false,
+                            onDismiss = {
+                                        viewModel.onRemoveErrorState()
+                            },
+                            text = "Analysing Check..."
+                        )
                     }
 
                     else -> {
@@ -104,7 +112,8 @@ class SignatureVerificationFragment : Fragment() {
             )
 
             SignatureStatus(
-                modifier = Modifier.align(Alignment.Center),
+                modifier = Modifier
+                    .align(Alignment.Center),
                 confidenceValue = confidenceValue
             )
 
@@ -123,20 +132,26 @@ class SignatureVerificationFragment : Fragment() {
                         .height(40.dp), text = "BACK",
                     fontSize = 14.sp, fontWeight = FontWeight.SemiBold
                 ) {
+                    sharedViewModel.capturedBitmap = null
+                    sharedViewModel.scannedQRResult = null
+                    sharedViewModel.filePath = null
+                    findNavController().navigate(R.id.action_signatureVerificationFragment_to_introFragment)
                 }
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                GreenButton(
-                    modifier = Modifier
-                        .fillMaxWidth(0.9f)
-                        .background(
-                            greenColor(), shape = RoundedCornerShape(10)
-                        )
-                        .height(40.dp), text = "SUBMIT",
-                    fontSize = 14.sp, fontWeight = FontWeight.SemiBold
-                ) {
-
+                if (confidenceValue >0) {
+                    GreenButton(
+                        modifier = Modifier
+                            .fillMaxWidth(0.9f)
+                            .background(
+                                greenColor(), shape = RoundedCornerShape(10)
+                            )
+                            .height(40.dp), text = "SUBMIT",
+                        fontSize = 14.sp, fontWeight = FontWeight.SemiBold
+                    ) {
+                        viewModel.mockApi()
+                    }
                 }
                 PoweredByXynotechBlack(
                     modifier = Modifier

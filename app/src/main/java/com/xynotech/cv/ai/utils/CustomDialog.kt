@@ -1,10 +1,16 @@
 package com.xynotech.cv.ai.utils
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
@@ -33,23 +39,41 @@ fun CustomDialog(
         )
     ) {
 
-        Column(
-            Modifier
-                .fillMaxWidth(0.75f)
-                .height(300.dp)
-        ) {
 
-            if (dialogUiState == DialogUiState.ERROR) {
+        if (dialogUiState == DialogUiState.ERROR) {
+
+            Column(
+                Modifier
+
+                    .fillMaxWidth(0.85f)
+                    .background(Color.White, shape = RoundedCornerShape(6))
+                    .height(300.dp), horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+
                 ImageWithTextView(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxHeight(),
                     image = R.drawable.signature_not_verified_icon,
                     text = text
                 )
             }
+        }
 
-            if (dialogUiState == DialogUiState.LOADING) {
-                LoadingView(modifier = Modifier, text = text)
+        if (dialogUiState == DialogUiState.LOADING) {
+
+            Column(
+                Modifier.fillMaxWidth(), horizontalAlignment =
+                Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+
+                LoadingView(
+                    modifier = Modifier
+                        .height(300.dp)
+                        .fillMaxWidth(), text = text
+                )
             }
         }
+
     }
 }

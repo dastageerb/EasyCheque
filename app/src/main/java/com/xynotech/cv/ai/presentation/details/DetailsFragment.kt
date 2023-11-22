@@ -10,13 +10,16 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -35,6 +38,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
@@ -53,10 +57,11 @@ import com.xynotech.cv.ai.utils.PoweredByXynotechBlack
 import com.xynotech.cv.ai.utils.buttonGrey
 import com.xynotech.cv.ai.utils.font
 import com.xynotech.cv.ai.utils.greenColor
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class DetailsFragment: Fragment() {
 
-    val uploadViewModel: UploadImageViewModel by viewModels()
 
     val detailsViewModel: DetailsViewModel by viewModels()
 
@@ -107,7 +112,8 @@ class DetailsFragment: Fragment() {
 
                 DetailsItemComposable(
                     modifier = Modifier,
-                    detailType = "Name", R.drawable.person_icon, value.comparison.extractedText.name
+                    detailType = "Name", R.drawable.person_icon,
+                    value.data?.name?:""
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -115,18 +121,28 @@ class DetailsFragment: Fragment() {
                 DetailsItemComposable(
                     detailType = "Amount",
                     imageRes = R.drawable.baseline_money_24,
-                    valueText = value.comparison.extractedText.amountInDigits
+                    valueText = value.data?.amountInDigits?:""
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                AmountInWords(
+                    detailType = "Amount in words",
+                    imageRes = R.drawable.pkr_icon,
+                    valueText = value.data?.amountInWords?:"",
+                    fontSize = 14.sp
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
 
                 DetailsItemComposable(
-                    detailType = "Amount in words",
-                    imageRes = R.drawable.pkr_icon,
-                    valueText = value.comparison.extractedText.amountInWords
+                    detailType = "Date",
+                    imageRes = R.drawable.calender_icon,
+                    valueText = value.data?.date?:""
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
+
 
             }
 
@@ -145,6 +161,10 @@ class DetailsFragment: Fragment() {
                         .height(40.dp), text = "BACK",
                     fontSize = 14.sp, fontWeight = FontWeight.SemiBold
                 ) {
+                    sharedViewModel.capturedBitmap = null
+                    sharedViewModel.scannedQRResult = null
+                    sharedViewModel.filePath = null
+
                 }
 
                 Spacer(modifier = Modifier.height(8.dp))
@@ -194,10 +214,13 @@ class DetailsFragment: Fragment() {
     fun DetailsItemComposable(
         modifier: Modifier = Modifier,
         detailType: String,
-                              imageRes:Int, valueText:String) {
+                              imageRes:Int, valueText:String
+
+    , fontSize:TextUnit = 18.sp
+    ) {
         Column(
             modifier
-                .height(100.dp)
+                .height(90.dp)
                 .fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center) {
             Text(text = detailType,
@@ -205,11 +228,11 @@ class DetailsFragment: Fragment() {
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold, modifier = Modifier
                     .fillMaxWidth()
-                    .padding(start = 30.dp))
+                    .padding(start = 26.dp))
             Card(
                 Modifier
                     .fillMaxWidth(0.9f)
-                    .fillMaxHeight()
+                    .defaultMinSize(100.dp)
                     .shadow(
                         ambientColor = colorResource(id = R.color.color_grey),
                         elevation = 12.dp
@@ -232,8 +255,9 @@ class DetailsFragment: Fragment() {
                             })
 
                     Text(text = valueText,
-                        color = Color.Black, fontFamily = font(), fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold, modifier = Modifier.constrainAs(text){
+                        color = Color.Black, fontFamily = font(), fontSize = fontSize,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.constrainAs(text) {
                             centerVerticallyTo(parent)
                             start.linkTo(image.end, 24.dp)
                         })
@@ -242,3 +266,63 @@ class DetailsFragment: Fragment() {
             }
         }
     }
+@Composable
+fun AmountInWords(
+    modifier: Modifier = Modifier,
+    detailType: String,
+    imageRes:Int, valueText:String
+
+    , fontSize:TextUnit = 18.sp
+) {
+    Column(
+        modifier
+            .fillMaxWidth()
+            .defaultMinSize(minHeight = 90.dp), horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center) {
+        Text(text = detailType,
+            color = Color.Black, fontFamily = font(),
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Bold, modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 26.dp))
+        Card(
+            Modifier
+                .fillMaxWidth(0.9f)
+                .defaultMinSize(minHeight = 90.dp)
+                .shadow(
+                    ambientColor = colorResource(id = R.color.color_grey),
+                    elevation = 12.dp
+                ), colors = CardDefaults.cardColors(containerColor = Color.White)
+
+        ) {
+            ConstraintLayout(
+                Modifier
+                    .fillMaxWidth()
+                    .defaultMinSize(minHeight = 90.dp)
+            ) {
+                val (image, text) = createRefs()
+                Image(painter = painterResource(id = imageRes),
+                    contentDescription = null, modifier = Modifier
+                        .size(40.dp)
+                        .constrainAs(image)
+                        {
+                            start.linkTo(parent.start, 16.dp)
+                            centerVerticallyTo(parent)
+                        })
+
+                Text(text = valueText,
+                    color = Color.Black, fontFamily = font(), fontSize = fontSize,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier
+                        .fillMaxWidth(0.8f)
+                        .wrapContentHeight()
+                        .constrainAs(text) {
+                        centerVerticallyTo(parent)
+                        start.linkTo(image.end, 24.dp)
+                            end.linkTo(parent.end, 24.dp)
+                    })
+
+            }
+        }
+    }
+}

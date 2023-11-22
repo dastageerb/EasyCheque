@@ -75,6 +75,7 @@ class ProcessFragment : Fragment() {
                 when(uiState.value) {
                     is NetworkResource.Success -> {
                         sharedViewModel.details = (uiState.value as NetworkResource.Success<CheckVerificationResponse>).data
+                        sharedViewModel.filePath = (uiState.value as NetworkResource.Success<CheckVerificationResponse>).data?.data?.filePath
 
                         findNavController().navigate(R.id.action_processFragment_to_detailsFragment)
                     }
@@ -89,14 +90,16 @@ class ProcessFragment : Fragment() {
                     }
 
                     is NetworkResource.Error -> {
-                        CustomDialog(
-                            dialogUiState = DialogUiState.ERROR,
-                            shouldDismiss = true,
-                            onDismiss = {
-                                        processViewModel.onRemoveErrorState()
-                            },
-                            text = "Something went wrong"
-                        )
+                        (uiState.value as NetworkResource.Error<CheckVerificationResponse>).msg?.let {
+                            CustomDialog(
+                                dialogUiState = DialogUiState.ERROR,
+                                shouldDismiss = true,
+                                onDismiss = {
+                                    processViewModel.onRemoveErrorState()
+                                },
+                                text = it
+                            )
+                        }
                     }
 
                     is NetworkResource.NONE -> {
@@ -174,6 +177,8 @@ class ProcessFragment : Fragment() {
                 ) {
                     sharedViewModel.capturedBitmap = null
                     sharedViewModel.scannedQRResult = null
+                    sharedViewModel.filePath = null
+                    findNavController().clearBackStack(R.id.capturingFragment)
                     findNavController().popBackStack()
                 }
 
@@ -189,7 +194,9 @@ class ProcessFragment : Fragment() {
                     , text = "CONTINUE",
                     fontSize = 14.sp, fontWeight = FontWeight.SemiBold
                 ) {
-                    findNavController().navigate(R.id.action_processFragment_to_detailsFragment)
+                    if (sharedViewModel.capturedBitmap != null && sharedViewModel.scannedQRResult != null) {
+                        processViewModel.processCheck(sharedViewModel.capturedBitmap!!, sharedViewModel.scannedQRResult!!)
+                    }
                 }
             }
 

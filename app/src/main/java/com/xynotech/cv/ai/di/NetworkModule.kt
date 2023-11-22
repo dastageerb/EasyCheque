@@ -5,6 +5,7 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -20,13 +21,31 @@ object NetworkModule
     @Provides
     @Singleton
     fun providesOkHttpClient(): OkHttpClient {
+//        val loggingInterceptor = HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BASIC)
+//        return OkHttpClient.Builder()
+//            .addInterceptor(loggingInterceptor)
+//
+//            .readTimeout(1, TimeUnit.MINUTES)
+//            .connectTimeout(1, TimeUnit.MINUTES)
+//            .writeTimeout(1,TimeUnit.MINUTES)
+//
+//            .build()
+
+
         val loggingInterceptor = HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BASIC)
+        val jsonInterceptor = Interceptor { chain ->
+            val request = chain.request().newBuilder()
+                .addHeader("Content-Type", "application/json")
+                .build()
+            chain.proceed(request)
+        }
+
         return OkHttpClient.Builder()
             .addInterceptor(loggingInterceptor)
+            .addInterceptor(jsonInterceptor)  // Add the JSON interceptor here
             .readTimeout(1, TimeUnit.MINUTES)
             .connectTimeout(1, TimeUnit.MINUTES)
-            .writeTimeout(1,TimeUnit.MINUTES)
-
+            .writeTimeout(1, TimeUnit.MINUTES)
             .build()
     }
 
@@ -35,7 +54,7 @@ object NetworkModule
     fun providesRetrofit(client:OkHttpClient): Retrofit {
         return Retrofit.Builder()
             .client(client)
-            .baseUrl("https://d317-2400-adc1-178-8b00-88fd-2f70-af62-cb8a.ngrok-free.app/")
+            .baseUrl("https://5f20-43-231-63-122.ngrok-free.app/")
             .addConverterFactory(GsonConverterFactory.create())
             .build()
     }
