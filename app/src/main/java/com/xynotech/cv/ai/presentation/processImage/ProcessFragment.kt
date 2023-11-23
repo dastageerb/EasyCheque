@@ -85,7 +85,7 @@ class ProcessFragment : Fragment() {
                             dialogUiState = DialogUiState.LOADING,
                             shouldDismiss = false,
                             onDismiss = {  },
-                            text = "Processing Check..."
+                            text = "Processing Cheque..."
                         )
                     }
 
@@ -138,7 +138,7 @@ class ProcessFragment : Fragment() {
                 Spacer(modifier = Modifier.height(4.dp))
 
                 Text(
-                    text = "Front side of your check", fontSize = 16.sp,
+                    text = "Front side of your cheque", fontSize = 16.sp,
                     color = colorResource(id = R.color.color_grey),
                     fontWeight = FontWeight.SemiBold, fontFamily = FontFamily(Font(R.font.arial))
                 )
