@@ -143,7 +143,6 @@ class DetailsFragment: Fragment() {
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-
             }
 
             Column(
@@ -164,7 +163,7 @@ class DetailsFragment: Fragment() {
                     sharedViewModel.capturedBitmap = null
                     sharedViewModel.scannedQRResult = null
                     sharedViewModel.filePath = null
-
+                    findNavController().navigate(R.id.action_detailsFragment_to_introFragment)
                 }
 
                 Spacer(modifier = Modifier.height(8.dp))

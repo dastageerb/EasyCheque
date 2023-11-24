@@ -29,6 +29,8 @@ sealed class SignatureVerificationResponse<T>(
     class Loading<T> : SignatureVerificationResponse<T>()
 
     class NONE<T> : SignatureVerificationResponse<T>()
+
+    class SUBMITTING<T>  : SignatureVerificationResponse<T>()
 }
 
 @HiltViewModel
@@ -58,8 +60,8 @@ class SignatureVerificationViewModel @Inject constructor(private val uploadCheck
 
     fun mockApi() = viewModelScope.launch {
         try {
-            _state.value = SignatureVerificationResponse.Loading()
-            delay(200)
+            _state.value = SignatureVerificationResponse.SUBMITTING()
+            delay(2000)
             _state.value = SignatureVerificationResponse.Navigate()
 
         }catch (e:Exception) {

@@ -67,7 +67,7 @@ class SignatureVerificationFragment : Fragment() {
                         (uiState.value as SignatureVerificationResponse.ApiSuccess<VerifyCheckResponse>).data?.data?.let {
                             SignatureVerificationComposable(confidenceValue = it.confidence ?: 0.00)
                         } ?: kotlin.run {
-                            SignatureVerificationComposable(confidenceValue = -2.00)
+                            SignatureVerificationComposable(confidenceValue = -2.00, error = true)
                         }
                     }
 
@@ -88,11 +88,22 @@ class SignatureVerificationFragment : Fragment() {
                             text = "Analysing Cheque..."
                         )
                     }
+
+                     is SignatureVerificationResponse.SUBMITTING-> {
+                    CustomDialog(
+                        dialogUiState = DialogUiState.LOADING,
+                        shouldDismiss = false,
+                        onDismiss = {
+                            viewModel.onRemoveErrorState()
+                        },
+                        text = "Submitting Cheque..."
+                    )
+                }
                     is SignatureVerificationResponse.Error -> {
-                        SignatureVerificationComposable(confidenceValue = -2.00, (uiState.value as SignatureVerificationResponse.Error<VerifyCheckResponse>).msg)
+                        SignatureVerificationComposable(confidenceValue = -2.00, (uiState.value as SignatureVerificationResponse.Error<VerifyCheckResponse>).msg, error = true)
                     }
                     else -> {
-                        SignatureVerificationComposable(confidenceValue = -2.00)
+                        SignatureVerificationComposable(confidenceValue = -2.00, error = true)
                     }
                 }
             }
@@ -101,7 +112,8 @@ class SignatureVerificationFragment : Fragment() {
 
     @Composable
     private fun SignatureVerificationComposable(
-        confidenceValue: Double, message: String?= null) {
+        confidenceValue: Double, message: String? = null, error: Boolean = false
+    ) {
         Box(Modifier.fillMaxSize()) {
             Text(
                 text = "Cheque Analyser",
@@ -114,13 +126,19 @@ class SignatureVerificationFragment : Fragment() {
                     .align(Alignment.TopCenter)
             )
 
-            SignatureStatus(
-                modifier = Modifier
-                    .align(Alignment.Center),
-                confidenceValue = confidenceValue,
-                message
-            )
-
+            if (error) {
+                ImageWithTextView(
+                    modifier = Modifier.align(Alignment.Center),
+                    image = R.drawable.baseline_error_24,
+                    text = message ?: "Some error occurred"
+                )
+            } else {
+                SignatureStatus(
+                    modifier = Modifier
+                        .align(Alignment.Center),
+                    confidenceValue = confidenceValue
+                )
+            }
             Column(
                 Modifier.align(Alignment.BottomCenter),
                 horizontalAlignment = Alignment.CenterHorizontally
@@ -144,7 +162,7 @@ class SignatureVerificationFragment : Fragment() {
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                if (confidenceValue >0) {
+                if (confidenceValue >= 40) {
                     GreenButton(
                         modifier = Modifier
                             .fillMaxWidth(0.9f)
@@ -167,10 +185,9 @@ class SignatureVerificationFragment : Fragment() {
     }
 
     @Composable
-    fun SignatureStatus(modifier: Modifier,
-                        confidenceValue: Double, message:String?) =
+    fun SignatureStatus(modifier: Modifier, confidenceValue: Double) =
         when {
-            confidenceValue > 60 -> {
+            confidenceValue >= 60 -> {
                 ImageWithTextView(
                     modifier = modifier,
                     image = R.drawable.signature_verified_icon,
@@ -178,7 +195,7 @@ class SignatureVerificationFragment : Fragment() {
                 )
             }
 
-            confidenceValue > 40 && confidenceValue < 60 -> {
+            confidenceValue >= 40 && confidenceValue < 60 -> {
                 ImageWithTextView(
                     modifier = modifier,
                     image = R.drawable.ic_human_verification_required,
@@ -186,19 +203,11 @@ class SignatureVerificationFragment : Fragment() {
                 )
             }
 
-            confidenceValue > -1 && confidenceValue < 40 -> {
+            else -> {
                 ImageWithTextView(
                     modifier = modifier,
                     image = R.drawable.signature_not_verified_icon,
                     text = "Unable to verify Signature"
-                )
-            }
-
-            else -> {
-                ImageWithTextView(
-                    modifier = modifier,
-                    image = R.drawable.baseline_error_24,
-                    text = message?: "Some error occurred"
                 )
             }
         }

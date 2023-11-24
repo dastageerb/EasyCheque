@@ -28,5 +28,4 @@ class UploadCheckRepositoryImpl(private val apiService: UploadCheckApiService) :
 
         return apiService.analyseCheque(path)
     }
-
 }
