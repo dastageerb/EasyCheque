@@ -45,6 +45,9 @@ class IntroFragment : Fragment() {
 
     val sharedViewModel:CaptureSharedViewModel by activityViewModels()
 
+    val vm:UploadImageViewModel by activityViewModels()
+
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?

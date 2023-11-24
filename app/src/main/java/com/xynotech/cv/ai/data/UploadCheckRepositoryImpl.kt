@@ -1,5 +1,7 @@
 package com.xynotech.cv.ai.data
 
+import com.xynotech.cv.ai.data.entity.login.LoginEntity
+import com.xynotech.cv.ai.data.entity.login.LoginResponse
 import com.xynotech.cv.ai.domain.CheckVerificationResponse
 import com.xynotech.cv.ai.domain.UploadCheckRepository
 import com.xynotech.cv.ai.presentation.signatureverification.VerifyCheckResponse
@@ -26,4 +28,5 @@ class UploadCheckRepositoryImpl(private val apiService: UploadCheckApiService) :
 
         return apiService.analyseCheque(path)
     }
+
 }

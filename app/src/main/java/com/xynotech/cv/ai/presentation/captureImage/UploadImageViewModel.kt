@@ -1,12 +1,16 @@
 package com.xynotech.cv.ai.presentation.captureImage
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.xynotech.cv.ai.data.entity.login.LoginEntity
 import com.xynotech.cv.ai.domain.CheckVerificationResponse
 import com.xynotech.cv.ai.domain.UploadCheckRepository
 import com.xynotech.cv.ai.utils.NetworkResource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
