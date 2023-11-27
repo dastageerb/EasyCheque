@@ -162,7 +162,7 @@ class SignatureVerificationFragment : Fragment() {
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                if (confidenceValue >= 40) {
+                if (confidenceValue >= 60) {
                     GreenButton(
                         modifier = Modifier
                             .fillMaxWidth(0.9f)
@@ -187,7 +187,7 @@ class SignatureVerificationFragment : Fragment() {
     @Composable
     fun SignatureStatus(modifier: Modifier, confidenceValue: Double) =
         when {
-            confidenceValue >= 60 -> {
+            confidenceValue >= 80 -> {
                 ImageWithTextView(
                     modifier = modifier,
                     image = R.drawable.signature_verified_icon,
@@ -195,7 +195,7 @@ class SignatureVerificationFragment : Fragment() {
                 )
             }
 
-            confidenceValue >= 40 && confidenceValue < 60 -> {
+            confidenceValue >= 60 && confidenceValue < 80 -> {
                 ImageWithTextView(
                     modifier = modifier,
                     image = R.drawable.ic_human_verification_required,
