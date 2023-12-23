@@ -21,18 +21,8 @@ object NetworkModule
     @Provides
     @Singleton
     fun providesOkHttpClient(): OkHttpClient {
-//        val loggingInterceptor = HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BASIC)
-//        return OkHttpClient.Builder()
-//            .addInterceptor(loggingInterceptor)
-//
-//            .readTimeout(1, TimeUnit.MINUTES)
-//            .connectTimeout(1, TimeUnit.MINUTES)
-//            .writeTimeout(1,TimeUnit.MINUTES)
-//
-//            .build()
 
-
-        val loggingInterceptor = HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BASIC)
+        val loggingInterceptor = HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY)
         val jsonInterceptor = Interceptor { chain ->
             val request = chain.request().newBuilder()
                 .addHeader("Content-Type", "application/json")
@@ -54,7 +44,7 @@ object NetworkModule
     fun providesRetrofit(client:OkHttpClient): Retrofit {
         return Retrofit.Builder()
             .client(client)
-            .baseUrl("https://5f20-43-231-63-122.ngrok-free.app/")
+            .baseUrl("https://b830-2400-adc1-178-8b00-9427-fcc1-ccf9-de1f.ngrok-free.app")
             .addConverterFactory(GsonConverterFactory.create())
             .build()
     }
