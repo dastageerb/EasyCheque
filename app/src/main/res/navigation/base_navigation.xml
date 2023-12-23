@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/base_navigation"
+    app:startDestination="@id/introFragment">
+
+    <fragment
+        android:id="@+id/capturingFragment"
+        android:name="com.xynotech.cv.ai.presentation.captureImage.capture.CapturingFragment"
+        android:label="CapturingFragment" >
+        <action
+            android:id="@+id/action_capturingFragment_to_processFragment"
+            app:destination="@id/processFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/processFragment"
+        android:name="com.xynotech.cv.ai.presentation.processImage.ProcessFragment"
+        android:label="fragment_process" >
+        <action
+            android:id="@+id/action_processFragment_to_introFragment"
+            app:destination="@id/introFragment" />
+        <action
+            android:id="@+id/action_processFragment_to_detailsFragment"
+            app:destination="@id/detailsFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/introFragment"
+        android:name="com.xynotech.cv.ai.presentation.captureImage.IntroFragment"
+        tools:layout="@layout/fragment_intro" >
+        <action
+            android:id="@+id/action_introFragment_to_capturingFragment"
+            app:destination="@id/capturingFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/detailsFragment"
+        android:name="com.xynotech.cv.ai.presentation.details.DetailsFragment"
+        android:label="DetailsFragment" >
+        <action
+            android:id="@+id/action_detailsFragment_to_signatureVerificationFragment"
+            app:destination="@id/signatureVerificationFragment" />
+        <action
+            android:id="@+id/action_detailsFragment_to_introFragment"
+            app:destination="@id/introFragment"
+            app:launchSingleTop="true"
+            app:popUpTo="@id/introFragment"
+            app:popUpToInclusive="false"
+            />
+    </fragment>
+    <fragment
+        android:id="@+id/signatureVerificationFragment"
+        android:name="com.xynotech.cv.ai.presentation.signatureverification.SignatureVerificationFragment"
+        android:label="SignatureVerificationFragment" >
+        <action
+            app:launchSingleTop="true"
+            app:popUpTo="@id/introFragment"
+            app:popUpToInclusive="false"
+            android:id="@+id/action_signatureVerificationFragment_to_introFragment"
+            app:destination="@id/introFragment" />
+    </fragment>
+</navigation>
