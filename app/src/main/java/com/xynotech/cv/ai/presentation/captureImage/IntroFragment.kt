@@ -87,15 +87,16 @@ class IntroFragment : Fragment() {
 
             Spacer(modifier = Modifier.height(100.dp))
 
-            Image(painter = painterResource(id = R.drawable.meezan_bank_logo),
+            /// ec_logo_final
+            Image(painter = painterResource(id = R.drawable.ec_logo_final),
                 contentDescription = null,
                 modifier = Modifier
-                    .width(160.dp)
-                    .height(160.dp))
+                    .width(200.dp)
+                    .height(200.dp))
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            Text(text = "Deposit Cheque",
+            Text(text = "Easy Cheque",
                 textAlign = TextAlign.Center, color = Color.White,
                 fontSize = 36.sp, fontWeight = FontWeight.Bold,
                 modifier = Modifier.fillMaxWidth(0.35f), fontFamily = fontBold()
@@ -110,7 +111,7 @@ class IntroFragment : Fragment() {
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            Text(text = "Deposit your Meezan cheque digitally without visiting the bank",
+            Text(text = "Deposit your Bank cheque digitally without visiting the bank",
                 textAlign = TextAlign.Center, color = Color.White,
                 fontSize = 18.sp, fontWeight = FontWeight.Bold,
                 modifier = Modifier.fillMaxWidth(0.8f), fontFamily = fontBold()

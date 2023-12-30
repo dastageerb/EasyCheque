@@ -52,10 +52,24 @@
         android:name="com.xynotech.cv.ai.presentation.signatureverification.SignatureVerificationFragment"
         android:label="SignatureVerificationFragment" >
         <action
+            android:id="@+id/action_signatureVerificationFragment_to_introFragment"
             app:launchSingleTop="true"
             app:popUpTo="@id/introFragment"
             app:popUpToInclusive="false"
-            android:id="@+id/action_signatureVerificationFragment_to_introFragment"
-            app:destination="@id/introFragment" />
+            app:destination="@id/verifiedChequeFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/verifiedChequeFragment"
+        android:name="com.xynotech.cv.ai.presentation.verifiedChequeScreen.VerifiedChequeFragment"
+        android:label="fragment_verified_cheque"
+        tools:layout="@layout/fragment_verified_cheque" >
+        <action
+            android:id="@+id/action_verifiedChequeFragment_to_introFragment"
+            app:launchSingleTop="true"
+            app:popUpTo="@id/introFragment"
+            app:popUpToInclusive="false"
+            app:destination="@id/introFragment"
+
+            />
     </fragment>
 </navigation>

@@ -38,13 +38,9 @@ fun CustomDialog(
             usePlatformDefaultWidth = false
         )
     ) {
-
-
         if (dialogUiState == DialogUiState.ERROR) {
-
             Column(
                 Modifier
-
                     .fillMaxWidth(0.85f)
                     .background(Color.White, shape = RoundedCornerShape(6))
                     .height(300.dp), horizontalAlignment = Alignment.CenterHorizontally
@@ -60,7 +56,6 @@ fun CustomDialog(
         }
 
         if (dialogUiState == DialogUiState.LOADING) {
-
             Column(
                 Modifier.fillMaxWidth(), horizontalAlignment =
                 Alignment.CenterHorizontally,
@@ -74,6 +69,5 @@ fun CustomDialog(
                 )
             }
         }
-
     }
 }

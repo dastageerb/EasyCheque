@@ -25,9 +25,9 @@
     <color name="color_red">#F44336</color>
     <color name="color_orange">#FFC107</color>
 
-    <color name="color_primary_light">#711F7E</color>
-    <color name="color_primary_dark">#4D0F57</color>
-    <color name="color_green">#00854A</color>
+    <color name="color_primary_light">#09AA4B</color>
+    <color name="color_primary_dark">#09AA4B</color>
+    <color name="color_green">#F1A546</color>
     <color name="color_grey">#C6C6D3</color>
     <color name="grey_background">#F2F2F2</color>
 </resources>

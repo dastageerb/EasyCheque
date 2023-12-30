@@ -41,7 +41,7 @@ fun previe() {
 fun LoadingView(modifier:Modifier,text:String) {
     Card(
         Modifier
-            .fillMaxWidth(0.75f), colors = CardDefaults.cardColors(containerColor = Color(0xFFF8D1FF))) {
+            .fillMaxWidth(0.75f), colors = CardDefaults.cardColors(containerColor = Color(0xFFD3EBD4))) {
         Column(modifier, horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
 
             LoadingAnimation3()

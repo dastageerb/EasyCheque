@@ -85,7 +85,7 @@ class ProcessFragment : Fragment() {
                             dialogUiState = DialogUiState.LOADING,
                             shouldDismiss = false,
                             onDismiss = {  },
-                            text = "Processing Cheque..."
+                            text = "Reading cheque contents..."
                         )
                     }
 

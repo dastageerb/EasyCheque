@@ -87,6 +87,38 @@
             />
 
 
+        <TextView
+            android:id="@+id/fragmentCapturingChequeVisibilityMessage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="-70dp"
+            android:background="@drawable/custom_border"
+            android:padding="8dp"
+            android:visibility="gone"
+            android:rotation="90"
+            android:text="Please Adjust the cheque inside the frame"
+            android:textAlignment="center"
+            android:textColor="@color/white"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@id/imageView" />
+
+
+        <TextView
+            android:id="@+id/fragmentScanningQRmessage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/custom_border"
+            android:padding="8dp"
+            android:rotation="90"
+            android:text="Scanning QR code"
+            android:textAlignment="center"
+            android:textColor="@color/white"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@id/imageView" />
+
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <RelativeLayout

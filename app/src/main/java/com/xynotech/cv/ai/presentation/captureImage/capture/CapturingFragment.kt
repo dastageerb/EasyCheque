@@ -28,10 +28,10 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
+import com.google.android.material.snackbar.Snackbar
+import com.google.android.material.snackbar.Snackbar.SnackbarLayout
 import com.google.mlkit.vision.barcode.BarcodeScanner
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions
 import com.google.mlkit.vision.barcode.BarcodeScanning
@@ -46,7 +46,9 @@ import com.xynotech.cv.ai.presentation.captureImage.CaptureSharedViewModel
 import com.xynotech.cv.ai.presentation.captureImage.capture.objectoverlay.BoxData
 import com.xynotech.cv.ai.presentation.captureImage.capture.objectoverlay.DetectedObjects
 import com.xynotech.cv.ai.utils.hide
+import com.xynotech.cv.ai.utils.show
 import dagger.hilt.android.AndroidEntryPoint
+import es.dmoral.toasty.Toasty
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -94,7 +96,6 @@ class CapturingFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         cameraExecutor = Executors.newSingleThreadExecutor()
-
         if (requireContext().hasCameraPermission()) {
             startCamera()
         } else {
@@ -139,7 +140,12 @@ class CapturingFragment : Fragment() {
                         sharedViewModel.capturedBitmap = getViewFinderImage()
                     }
                 }
-                findNavController().navigate(R.id.action_capturingFragment_to_processFragment)
+
+                if (sharedViewModel.boundingBox != null && sharedViewModel.capturedBitmap != null) {
+                    cropCheque(sharedViewModel.boundingBox!!, sharedViewModel.capturedBitmap!!)
+                    findNavController().navigate(R.id.action_capturingFragment_to_processFragment)
+                }
+
             }
         }
     }
@@ -213,33 +219,22 @@ class CapturingFragment : Fragment() {
                         list.get(0).boundingBox?.let {
                             allowCapture = true
                             val detectedRect = it
+                            sharedViewModel.boundingBox = detectedRect
                             binding.imageView.background = null
 
+                            binding.fragmentCapturingChequeVisibilityMessage?.hide()
                             binding.imageView.setImageResource(R.drawable.cheque_scan_green)
-                            val resources: Resources = resources
-                            val marginDp = 20.0f
-                            val marginPx = resources.displayMetrics.density * marginDp
 
-                            val adjustedLeft = detectedRect.left.coerceAtLeast(marginPx.toInt()) // Ensure at least margin space from left edge
-                            val adjustedTop = detectedRect.top.coerceAtLeast(marginPx.toInt()) // Ensure at least margin space from top edge
-                            val adjustedRight = detectedRect.right.coerceAtMost(imageProxy.width - marginPx.toInt() - 1) // Stay within right edge (minus margin and 1 to avoid exceeding bounds)
-                            val adjustedBottom = detectedRect.bottom.coerceAtMost(imageProxy.height - marginPx.toInt() - 1) // Stay within bottom edge (minus margin and 1 to avoid exceeding bounds)
-
-                            val adjustedRect = Rect(adjustedLeft, adjustedTop, adjustedRight, adjustedBottom)
-
-                            if (adjustedRect.width() > 0 && adjustedRect.height() > 0) {
-                                val croppedBitmap = Bitmap.createBitmap(imageProxy, adjustedRect.left, adjustedRect.top, adjustedRect.width(), adjustedRect.height())
-                            sharedViewModel.capturedBitmap = croppedBitmap
-                            } else {
-                                sharedViewModel.capturedBitmap = imageProxy
-                            }
                         }
                     } else {
+                        binding.fragmentCapturingChequeVisibilityMessage?.text =  "Please adjust the cheque into the frame"
                         allowCapture = false
+                        sharedViewModel.boundingBox = null
                         sharedViewModel.capturedBitmap = null
                         binding.imageView.setImageResource(R.drawable.cheque_scan_white)
+                        binding.fragmentCapturingChequeVisibilityMessage?.show()
                     }
-                }catch (e:Exception) {
+                } catch (e:Exception) {
 
                 }
         }?.addOnFailureListener {
@@ -281,10 +276,12 @@ class CapturingFragment : Fragment() {
                         if (sharedViewModel.scannedQRResult == null) {
                             binding.qrIndicator?.background = null
                             binding.qrIndicator?.clearAnimation()
-                            //binding.imageView.setImageResource(R.drawable.cheque_scan_green)
-                            Toast.makeText(requireContext(),"Qr code scanned", Toast.LENGTH_SHORT).show()
+                            binding.fragmentScanningQRmessage?.hide()
+
                             sharedViewModel.scannedQRResult = barcodes[0].rawValue
                             binding.qrIndicator?.hide()
+                            Toasty.success(requireContext(), "QR Scanned", Toast.LENGTH_SHORT, true)
+                                .show();
                         }
                     }
 
@@ -390,6 +387,33 @@ class CapturingFragment : Fragment() {
             {
                 data = Uri.fromParts("package", "com.xynotech.converso.ai", null)
             })
+    }
+
+
+    fun cropCheque(detectedRect: Rect, bitmap: Bitmap) {
+        val resources: Resources = resources
+        val marginDp = 20.0f
+        val marginPx = resources.displayMetrics.density * marginDp
+
+        val adjustedLeft = detectedRect.left.coerceAtLeast(marginPx.toInt())
+        val adjustedTop = detectedRect.top.coerceAtLeast(marginPx.toInt())
+        val adjustedRight = detectedRect.right.coerceAtMost(bitmap.width - marginPx.toInt() - 1)
+        val adjustedBottom = detectedRect.bottom.coerceAtMost(bitmap.height - marginPx.toInt() - 1)
+
+        val adjustedRect = Rect(adjustedLeft, adjustedTop, adjustedRight, adjustedBottom)
+
+        if (adjustedRect.width() > 0 && adjustedRect.height() > 0) {
+            val croppedBitmap = Bitmap.createBitmap(
+                bitmap,
+                adjustedRect.left,
+                adjustedRect.top,
+                adjustedRect.width(),
+                adjustedRect.height()
+            )
+            sharedViewModel.capturedBitmap = croppedBitmap
+        } else {
+            sharedViewModel.capturedBitmap = bitmap
+        }
     }
 
     companion object {

@@ -4,6 +4,7 @@ package com.xynotech.cv.ai.presentation.captureImage
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Matrix
+import android.graphics.Rect
 import android.util.Log
 import androidx.annotation.OptIn
 import androidx.camera.core.ExperimentalGetImage
@@ -39,6 +40,8 @@ class CaptureSharedViewModel @Inject constructor() : ViewModel() {
     var filePath:String?= null
 
     private var isScanning: Boolean = false
+
+    var boundingBox: Rect? = null
 
 
 //    var _scanState = Channel<Barcode>()

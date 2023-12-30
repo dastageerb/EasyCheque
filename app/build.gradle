@@ -43,7 +43,6 @@ android {
     composeOptions {
         kotlinCompilerExtensionVersion '1.5.3'
     }
-
 }
 dependencies {
 
@@ -120,6 +119,7 @@ dependencies {
     debugImplementation("androidx.compose.ui:ui-test-manifest:1.4.3")
 
 
+    implementation 'com.github.GrenderG:Toasty:1.5.2'
 
    // implementation project(':sdk')
 }

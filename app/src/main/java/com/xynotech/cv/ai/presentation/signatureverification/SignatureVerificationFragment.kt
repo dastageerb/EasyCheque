@@ -85,7 +85,7 @@ class SignatureVerificationFragment : Fragment() {
                             onDismiss = {
                                         viewModel.onRemoveErrorState()
                             },
-                            text = "Analysing Cheque..."
+                            text = "Confirming validity of the cheque..."
                         )
                     }
 
@@ -206,7 +206,7 @@ class SignatureVerificationFragment : Fragment() {
             else -> {
                 ImageWithTextView(
                     modifier = modifier,
-                    image = R.drawable.signature_not_verified_icon,
+                    image = R.drawable.signature_not_verified,
                     text = "Unable to verify Signature"
                 )
             }
