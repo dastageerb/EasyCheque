@@ -1,6 +1,9 @@
 package com.xynotech.cv.ai.presentation.captureImage
 
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
+import android.provider.Settings
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -34,11 +37,11 @@ import androidx.navigation.fragment.findNavController
 import com.xynotech.converso.ai.R
 import com.xynotech.cv.ai.utils.GreenButton
 import com.xynotech.cv.ai.utils.PoweredByXynotechWhite
-import com.xynotech.cv.ai.utils.font
 import com.xynotech.cv.ai.utils.fontBold
 import com.xynotech.cv.ai.utils.greenColor
 import com.xynotech.cv.ai.utils.themeGradient
 import dagger.hilt.android.AndroidEntryPoint
+
 
 @AndroidEntryPoint
 class IntroFragment : Fragment() {
@@ -54,6 +57,7 @@ class IntroFragment : Fragment() {
     ): View {
         return ComposeView(requireContext()).apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+
             setContent {
                 Box(modifier = Modifier
                     .background(

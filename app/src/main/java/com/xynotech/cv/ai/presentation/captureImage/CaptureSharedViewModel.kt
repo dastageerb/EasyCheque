@@ -10,15 +10,23 @@ import androidx.camera.core.ExperimentalGetImage
 import androidx.camera.core.ImageProxy
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.mlkit.vision.barcode.BarcodeScannerOptions
 import com.google.mlkit.vision.barcode.BarcodeScanning
+import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.common.InputImage
 import com.xynotech.cv.ai.domain.CheckVerificationResponse
 import com.xynotech.cv.ai.presentation.captureImage.capture.CapturingFragment
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+
+data class ScannedBarcode(val barcode: Barcode? = null)
 
 @HiltViewModel
 @OptIn(ExperimentalGetImage::class)
@@ -33,41 +41,48 @@ class CaptureSharedViewModel @Inject constructor() : ViewModel() {
     private var isScanning: Boolean = false
 
 
-    var _scanState = Channel<Boolean>()
-    val scanState = _scanState.receiveAsFlow()
+//    var _scanState = Channel<Barcode>()
+//    val scanState = _scanState.receiveAsFlow()
+//
 
-    fun scanWithMlKit(imageProxy: ImageProxy)  {
+    var _scanState = MutableStateFlow<ScannedBarcode>(ScannedBarcode())
+    val scanState = _scanState.asStateFlow()
+
+
+    fun scanWithMlKit(imageProxy: ImageProxy) = viewModelScope.launch(Dispatchers.IO)  {
             val mediaImage = imageProxy.image
             if (mediaImage != null && !isScanning) {
+                val options = BarcodeScannerOptions.Builder()
+                    .setBarcodeFormats(
+                        Barcode.FORMAT_DATA_MATRIX
+                    )
+                    .build()
                 val image = InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
-
-                val scanner = BarcodeScanning.getClient()
-
+                val scanner = BarcodeScanning.getClient(options)
+                imageProxy.close()
                 isScanning = true
                 scanner.process(image)
                     .addOnSuccessListener { barcodes ->
-
                         barcodes.firstOrNull().let { barcode ->
                             val rawValue = barcode?.rawValue
                             rawValue?.let {
+                                _scanState.update { it.copy(barcode = barcode) }
                                 viewModelScope.launch {
-                                    if (scannedQRResult == null) {
-                                       _scanState.send(true)
-                                        scannedQRResult = rawValue
-                                    }
-                                    Log.d(CapturingFragment.TAG, "scanQR: " + scannedQRResult)
+                                    scannedQRResult = it
+//                                    if (scannedQRResult == null) {
+//                                       _scanState.send(barcode)
+//                                        scannedQRResult = rawValue
+//                                    }
 
+                                _scanState.update { it.copy(barcode = barcode) }
                                 }
                             }
                         }
-
                         isScanning = false
-                        imageProxy.close()
                     }
                     .addOnFailureListener {
-                        Log.d(CapturingFragment.TAG, "scanWithMlKit: "+it)
+                        _scanState.update { it.copy(barcode = null) }
                         isScanning = false
-                        imageProxy.close()
                     }
 
                 if (scannedQRResult == null) {
@@ -88,6 +103,7 @@ class CaptureSharedViewModel @Inject constructor() : ViewModel() {
         return rotatedBitmap
     }
 
-
     var details : CheckVerificationResponse? = null
+
+
 }

@@ -25,11 +25,44 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             />
+
+        <com.xynotech.cv.ai.presentation.captureImage.capture.RectBox
+            android:id="@+id/rectBox"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            app:layout_constraintDimensionRatio="9:16"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            />
+
+        <com.xynotech.cv.ai.presentation.captureImage.capture.objectoverlay.ObjectOverlay
+            android:id="@+id/objectOverLay"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            app:layout_constraintDimensionRatio="9:16"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            />
+        <com.xynotech.cv.ai.presentation.captureImage.capture.barcode_overlay.GraphicOverlay
+            android:id="@+id/graphicsOverLay"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            app:layout_constraintDimensionRatio="9:16"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            />
+
         <androidx.appcompat.widget.AppCompatImageView
             android:id="@+id/imageView"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:src="@drawable/cheque_scan_purple"
+            android:src="@drawable/cheque_scan_white"
             app:layout_constraintDimensionRatio="9:16"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
@@ -38,6 +71,22 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             />
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/qrIndicator"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:src="@drawable/cheque_scan_qr"
+            app:layout_constraintDimensionRatio="9:16"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="16dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            />
+
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <RelativeLayout
